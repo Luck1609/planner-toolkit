@@ -16,12 +16,10 @@ class Contact extends Model
 
   protected $fillable = [
     'phone_number',
-    // 'contactable_id',
-    // 'contactable_type',
     'is_primary',
   ];
 
-  public function contactable(): MorphTo
+  public function contact(): MorphTo
   {
     return $this->morphTo();
   }

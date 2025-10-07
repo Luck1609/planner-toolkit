@@ -34,6 +34,6 @@ class Office extends Model
 
   public function contacts(): MorphOne
   {
-    return $this->morphOne(Contact::class, 'contactable');
+    return $this->morphOne(Contact::class, 'contact');
   }
 }

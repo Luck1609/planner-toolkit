@@ -9,45 +9,38 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class SessionsTable
 {
-    public static function configure(Table $table): Table
-    {
-        return $table
-            ->columns([
-                IconColumn::make('is_current')
-                    ->boolean(),
-                TextColumn::make('title')
-                    ->searchable(),
-                IconColumn::make('finalized')
-                    ->boolean(),
-                TextColumn::make('start_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('end_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+  public static function configure(Table $table): Table
+  {
+    return $table
+      ->columns([
+        TextColumn::make('title')->label('Session Name'),
+        TextColumn::make('start_date')->date(),
+        TextColumn::make('end_date')->date(),
+        TextColumn::make('active')
+          ->default(function (Model $session) {
+            return $session->is_current ? 'Active' : 'Complete';
+          })
+          ->badge()
+          ->color(fn(string $state) => match ($state) {
+            'Active' => 'warning',
+            'Complete' => 'success',
+          }),
+      ])
+      ->filters([
+        //
+      ])
+      ->recordActions([
+        ViewAction::make(),
+        EditAction::make(),
+      ])
+      ->toolbarActions([
+        BulkActionGroup::make([
+          DeleteBulkAction::make(),
+        ]),
+      ]);
+  }
 }

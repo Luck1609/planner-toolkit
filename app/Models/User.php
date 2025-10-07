@@ -4,16 +4,20 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasName
 {
   /** @use HasFactory<\Database\Factories\UserFactory> */
   use HasUuids, HasFactory, Notifiable, InteractsWithMedia, SoftDeletes;
@@ -27,7 +31,8 @@ class User extends Authenticatable
    * @var list<string>
    */
   protected $fillable = [
-    'name',
+    'firstname',
+    'lastname',
     'email',
     'password',
   ];
@@ -55,30 +60,30 @@ class User extends Authenticatable
     ];
   }
 
-    /**
-     * Get the user's initials
-     */
-    public function initials(): string
-    {
-        return Str::of($this->name)
-            ->explode(' ')
-            ->take(2)
-            ->map(fn($word) => Str::substr($word, 0, 1))
-            ->implode('');
-    }
+  /**
+   * Get the user's initials
+   */
+  public function initials(): string
+  {
+    return Str::of($this->name)
+        ->explode(' ')
+        ->take(2)
+        ->map(fn($word) => Str::substr($word, 0, 1))
+        ->implode('');
+  }
 
   public function contacts(): MorphOne
   {
-    return $this->morphOne(Contact::class, 'contactable');
+    return $this->morphOne(Contact::class, 'contact');
   }
 
-//   public function getFilamentName(): string
-//   {
-//     return $this->firstname;
-//   }
+  public function getFilamentName(): string
+  {
+    return $this->firstname . ' ' . $this->lastname;
+  }
 
-//   public function canAccessPanel(Panel $panel): bool
-//   {
-//     return Auth::check();
-//   }
+    public function canAccessPanel(Panel $panel): bool
+    {
+      return true;
+    }
 }
