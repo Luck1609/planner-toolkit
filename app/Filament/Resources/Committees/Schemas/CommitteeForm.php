@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Committees\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class CommitteeForm
@@ -13,7 +12,6 @@ class CommitteeForm
   {
     return $schema
       ->components([
-        // Group::make([
         Select::make('title')
           ->options([
             'Mr' => 'Mr',

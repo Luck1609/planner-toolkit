@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Committees;
 use App\Filament\Resources\Committees\Pages\CreateCommittee;
 use App\Filament\Resources\Committees\Pages\EditCommittee;
 use App\Filament\Resources\Committees\Pages\ListCommittees;
+use App\Filament\Resources\Committees\Pages\ViewCommittee;
 use App\Filament\Resources\Committees\Schemas\CommitteeForm;
+use App\Filament\Resources\Committees\Schemas\CommitteeInfolist;
 use App\Filament\Resources\Committees\Tables\CommitteesTable;
 use App\Models\Committee;
 use BackedEnum;
@@ -18,11 +20,16 @@ class CommitteeResource extends Resource
 {
     protected static ?string $model = Committee::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
     {
         return CommitteeForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return CommitteeInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -41,7 +48,8 @@ class CommitteeResource extends Resource
     {
         return [
             'index' => ListCommittees::route('/'),
-            'create' => CreateCommittee::route('/create'),
+            // 'create' => CreateCommittee::route('/create'),
+            'view' => ViewCommittee::route('/{record}'),
             'edit' => EditCommittee::route('/{record}/edit'),
         ];
     }

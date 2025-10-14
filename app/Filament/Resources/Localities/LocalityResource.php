@@ -17,33 +17,33 @@ use Filament\Tables\Table;
 
 class LocalityResource extends Resource
 {
-    protected static ?string $model = Locality::class;
+  protected static ?string $model = Locality::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+  protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
-    public static function form(Schema $schema): Schema
-    {
-        return LocalityForm::configure($schema);
-    }
+  public static function form(Schema $schema): Schema
+  {
+    return LocalityForm::configure($schema);
+  }
 
-    public static function table(Table $table): Table
-    {
-        return LocalitiesTable::configure($table);
-    }
+  public static function table(Table $table): Table
+  {
+    return LocalitiesTable::configure($table);
+  }
 
-    public static function getRelations(): array
-    {
-        return [
-          SectorsRelationManager::class
-        ];
-    }
+  public static function getRelations(): array
+  {
+    return [
+      SectorsRelationManager::class
+    ];
+  }
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => ListLocalities::route('/'),
-            'create' => CreateLocality::route('/create'),
-            'edit' => EditLocality::route('/{record}/edit'),
-        ];
-    }
+  public static function getPages(): array
+  {
+    return [
+      'index' => ListLocalities::route('/'),
+      'create' => CreateLocality::route('/create'),
+      'edit' => EditLocality::route('/{record}/edit'),
+    ];
+  }
 }
