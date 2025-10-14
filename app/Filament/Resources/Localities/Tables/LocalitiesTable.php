@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Localities\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -10,33 +11,25 @@ use Filament\Tables\Table;
 
 class LocalitiesTable
 {
-    public static function configure(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('initials')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+  public static function configure(Table $table): Table
+  {
+    return $table
+      ->columns([
+        TextColumn::make('name'),
+        TextColumn::make('initials'),
+        TextColumn::make('sectors_count')->counts('sectors'),
+      ])
+      ->filters([
+        //
+      ])
+      ->recordActions([
+        EditAction::make(),
+        DeleteAction::make(),
+      ])
+      ->toolbarActions([
+        BulkActionGroup::make([
+          DeleteBulkAction::make(),
+        ]),
+      ]);
+  }
 }
