@@ -20,7 +20,7 @@ class MinuteResource extends Resource
 {
     protected static ?string $model = Minute::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
+    protected static string|BackedEnum|null $navigationIcon = 'icon-file-description';
 
     public static function form(Schema $schema): Schema
     {

@@ -2,18 +2,23 @@
 
 namespace App\Filament\Resources\Extracts;
 
-use App\Filament\Resources\Extracts\Pages\CreateExtract;
-use App\Filament\Resources\Extracts\Pages\EditExtract;
-use App\Filament\Resources\Extracts\Pages\ListExtracts;
-use App\Filament\Resources\Extracts\Pages\ViewExtract;
-use App\Filament\Resources\Extracts\Schemas\ExtractForm;
-use App\Filament\Resources\Extracts\Schemas\ExtractInfolist;
-use App\Filament\Resources\Extracts\Tables\ExtractsTable;
+use App\Filament\Resources\Extracts\Pages\ManageExtracts;
 use App\Models\Extract;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -22,37 +27,50 @@ class ExtractResource extends Resource
 {
     protected static ?string $model = Extract::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'icon-file-certificate';
+
+    protected static ?string $recordTitleAttribute = 'Extracts';
 
     public static function form(Schema $schema): Schema
     {
-        return ExtractForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return ExtractInfolist::configure($schema);
+        return $schema
+            ->components([
+                TextInput::make('Extracts')
+                    ->required()
+                    ->maxLength(255),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        return ExtractsTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
+        return $table
+            ->recordTitleAttribute('Extracts')
+            ->columns([
+                TextColumn::make('Extracts')
+                    ->searchable(),
+            ])
+            ->filters([
+                TrashedFilter::make(),
+            ])
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListExtracts::route('/'),
-            'create' => CreateExtract::route('/create'),
-            'view' => ViewExtract::route('/{record}'),
-            'edit' => EditExtract::route('/{record}/edit'),
+            'index' => ManageExtracts::route('/'),
         ];
     }
 
