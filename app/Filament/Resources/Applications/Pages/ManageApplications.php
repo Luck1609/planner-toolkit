@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Applications\Pages;
 
 use App\Filament\Resources\Applications\ApplicationResource;
 use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ManageRecords;
 
-class ListApplications extends ListRecords
+class ManageApplications extends ManageRecords
 {
     protected static string $resource = ApplicationResource::class;
 

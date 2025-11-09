@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\Applications;
 
-use App\Filament\Resources\Applications\Pages\CreateApplication;
-use App\Filament\Resources\Applications\Pages\EditApplication;
-use App\Filament\Resources\Applications\Pages\ListApplications;
-use App\Filament\Resources\Applications\Pages\ViewApplication;
-use App\Filament\Resources\Applications\Schemas\ApplicationForm;
-use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Filament\Resources\Applications\Pages\ManageApplications;
 use App\Models\Application;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ApplicationResource extends Resource
@@ -26,33 +26,40 @@ class ApplicationResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return ApplicationForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return ApplicationInfolist::configure($schema);
+        return $schema
+            ->components([
+                TextInput::make('Applications')
+                    ->required()
+                    ->maxLength(255),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
+        return $table
+            ->recordTitleAttribute('Applications')
+            ->columns([
+                TextColumn::make('Applications')
+                    ->searchable(),
+            ])
+            ->filters([
+                //
+            ])
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListApplications::route('/'),
-            'create' => CreateApplication::route('/create'),
-            'view' => ViewApplication::route('/{record}'),
-            'edit' => EditApplication::route('/{record}/edit'),
+            'index' => ManageApplications::route('/'),
         ];
     }
 }

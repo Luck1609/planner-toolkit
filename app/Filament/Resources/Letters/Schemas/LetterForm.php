@@ -27,7 +27,7 @@ class LetterForm
         Radio::make('state')
           ->options([
             'outgoing' => 'Outgoing letter',
-            'incoming' => 'incoming letter',
+            'incoming' => 'Incoming letter',
           ])
           ->label('State of letter'),
       ])

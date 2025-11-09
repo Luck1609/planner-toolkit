@@ -7,6 +7,7 @@ use App\Models\Extract;
 use App\Models\Locality;
 use App\Models\Sector;
 use BackedEnum;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -15,6 +16,7 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -128,10 +130,13 @@ class ExtractResource extends Resource
         TrashedFilter::make(),
       ])
       ->recordActions([
-        EditAction::make(),
-        DeleteAction::make(),
-        ForceDeleteAction::make(),
-        RestoreAction::make(),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make(),
+          ForceDeleteAction::make(),
+          RestoreAction::make(),
+        ])
       ])
       ->toolbarActions([
         BulkActionGroup::make([
