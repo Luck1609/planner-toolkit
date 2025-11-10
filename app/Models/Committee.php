@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Committee extends Model
 {
@@ -13,4 +15,14 @@ class Committee extends Model
   public $incrementing = false;
 
   protected $guarded = [];
+
+  public function participants(): HasMany
+  {
+    return $this->hasMany(Participant::class);
+  }
+
+  public function minute(): HasOne
+  {
+    return $this->hasOne(Minute::class);
+  }
 }

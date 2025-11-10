@@ -14,7 +14,13 @@ class MonthlySession extends Model
   protected $keyType = 'string';
   public $incrementing = false;
 
-  protected $fillable = [];
+  protected $fillable = [
+    'is_current',
+    'title',
+    'finalized',
+    'start_date',
+    'end_date'
+  ];
 
   public function applications(): BelongsToMany
   {

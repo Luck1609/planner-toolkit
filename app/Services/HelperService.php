@@ -4,16 +4,6 @@ namespace App\Services;
 
 class HelperService
 {
-  /**
-   * Create a new class instance.
-   */
-  public function __construct()
-  {
-    //
-  }
-
-
-
   public static function getBlocks()
   {
     return collect(range(0, 25))->reduce(function (array $blocks = [], int $index) {
