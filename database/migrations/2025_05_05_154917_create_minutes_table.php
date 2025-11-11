@@ -20,7 +20,7 @@ return new class extends Migration
       $table->json('participants')->nullable();
       $table->json('attendees')->nullable();
       $table->json('absentees')->nullable();
-      $table->foreignUuid('meeting_id')->constrained();
+      $table->foreignUuid('meeting_id')->constrained()->onDelete('CASCADE');
       $table->json('content')->nullable();
       $table->json('recorded_by')->nullable(); // Name, role, department
       $table->json('approved_by')->nullable(); // Name, role, department

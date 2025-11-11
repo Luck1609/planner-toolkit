@@ -43,8 +43,10 @@ class ApplicationResource extends Resource
       ->recordTitleAttribute('Applications')
       ->columns([
         TextColumn::make('name')->label('Full name')
-          ->default(fn(Model $member) => "{$member->title} {$member->firstname} {$member->lastname}"),
-        TextColumn::make('contact')->label('Phone number'),
+          ->default(fn(Model $member) => "{$member->title} {$member->firstname} {$member->lastname}")
+          ->searchable(),
+        TextColumn::make('contact')->label('Phone number')
+          ->searchable(),
         TextColumn::make('currentState')
           ->label('State')
           ->default(fn(Model $application) => $application->existing ? 'Regularization' : 'New')
@@ -52,11 +54,15 @@ class ApplicationResource extends Resource
           ->color(fn(string $state) => match ($state) {
             'Regularization' => 'info',
             'New' => 'success',
-          }),
-        TextColumn::make('locality.name')->label('Locality'),
-        TextColumn::make('sector.name')->label('Sector'),
-        TextColumn::make('block'),
-        TextColumn::make('plot_number'),
+          })
+          ->searchable(),
+        TextColumn::make('locality.name')->label('Locality')
+          ->searchable(),
+        TextColumn::make('sector.name')->label('Sector')
+          ->searchable(),
+        TextColumn::make('block')->searchable(),
+        TextColumn::make('plot_number')
+          ->searchable(),
         TextColumn::make('shelf')->label('Shelf No.'),
       ])
       ->filters([
@@ -73,6 +79,9 @@ class ApplicationResource extends Resource
         BulkActionGroup::make([
           DeleteBulkAction::make(),
         ]),
+      ])
+      ->headerActions([
+        
       ]);
   }
 

@@ -13,8 +13,8 @@ return new class extends Migration
   {
     Schema::create('offices', function (Blueprint $table) {
       $table->uuid('id')->primary();
-      $table->foreignUuid('region_id')->references('id')->on('regions');
-      $table->foreignUuid('district_id')->references('id')->on('districts');
+      $table->foreignUuid('region_id')->references('id')->on('regions')->nullOnDelete();
+      $table->foreignUuid('district_id')->references('id')->on('districts')->nullOnDelete();
       $table->string('name');
       $table->string('initials');
       $table->string('address')->nullable();

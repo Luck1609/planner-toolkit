@@ -15,7 +15,7 @@ return new class extends Migration
       $table->uuid('id')->unique()->primary();
       $table->decimal('longitude', 10, 7);
       $table->decimal('latitude', 10, 7);
-      $table->foreignUuid('application_id')->constrained();
+      $table->foreignUuid('application_id')->constrained()->onDelete('CASCADE');
       $table->timestamps();
     });
   }

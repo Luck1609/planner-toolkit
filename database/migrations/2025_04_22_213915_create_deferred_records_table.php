@@ -14,9 +14,9 @@ return new class extends Migration
     Schema::create('deferred_records', function (Blueprint $table) {
       $table->uuid('id')->primary();
       $table->longText('comments');
-      $table->foreignUuid('application_id')->constrained();
+      $table->foreignUuid('application_id')->constrained()->onDelete('CASCADE');
       $table->date('deferred_on');
-      $table->foreignUuid('monthly_session_id')->constrained();
+      $table->foreignUuid('monthly_session_id')->constrained()->nullOnDelete();
       $table->timestamps();
     });
   }

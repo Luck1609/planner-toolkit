@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('districts', function (Blueprint $table) {
       $table->uuid('id')->primary();
       $table->string('name');
-      $table->foreignUuid('region_id')->constrained('regions');
+      $table->foreignUuid('region_id')->constrained('regions')->nullOnDelete();
       // $table->decimal('lat', 10, 7);
       // $table->decimal('lng', 10, 7);
       $table->timestamps();

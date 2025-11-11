@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('meetings', function (Blueprint $table) {
       $table->uuid('id')->primary();
-      $table->foreignUuid('monthly_session_id')->nullable()->constrained();
+      $table->foreignUuid('monthly_session_id')->nullable()->constrained()->nullOnDelete();
       $table->string('title');
       $table->text('agenda')->nullable();
       $table->date('date');

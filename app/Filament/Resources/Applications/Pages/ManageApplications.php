@@ -13,104 +13,98 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Components\Group;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ManageApplications extends ManageRecords
 {
   protected static string $resource = ApplicationResource::class;
-  private static array $coordinates = [];
-  private MonthlySession | null $session;
 
   protected function getHeaderActions(): array
   {
-    $this->session = MonthlySession::where('is_current', true)->where('finalized', false)->first();
-
-    logger('', ['session' => $this->session]);
-
     return [
-      ...!isset($this->session)
-        ? [
-          Action::make('New session')
-            ->schema([
-              Group::make([
-                TextInput::make('title')->required()->columnSpanFull(),
-                DatePicker::make('start_date')->required()->columns(1),
-                DatePicker::make('end_date')->required()->after('start_date')->columns(1),
-              ])
-                ->columns(2)
-            ])
-            ->modalWidth(Width::ExtraLarge)
-            ->action(function (array $data) {
-              $currentSession = MonthlySession::create([
-                ...$data,
-                'is_current' => true,
-                'finalized' => false
-              ]);
-
-              $this->session = $currentSession;
-              return $currentSession;
-            }),
-        ]
-        : [
-          CreateAction::make()
-            ->steps(FormService::applicationForm())
-            ->mutateDataUsing(function (array $data) {
-
-              return [
-                ...$data,
-                'user_id' => Auth::user()->id,
-                ...$this->generateApplicationNumber($data)
-              ];
-            })
-            ->using(function (array $data, string $model): Model {
-              logger('', ['application-details' => $data]);
-              $application = Application::create([
-                "title" => $data['title'],
-                "firstname" => $data['firstname'],
-                "lastname" => $data['lastname'],
-                "contact" => $data['contact'],
-                "house_no" => $data['house_no'],
-                "address" => $data['address'],
-                "locality_id" => $data['locality_id'],
-                "sector_id" => $data['sector_id'],
-                "block" => $data['block'],
-                "plot_number" => $data['plot_number'],
-                "type" => $data['type'],
-                "existing" => $data['existing'],
-                "use" => $data['use'],
-                "application_num" => $data['application_num'],
-                "shelf" => $data['shelf'],
-              ]);
-            })
-        ]
+      ...!$this->hasActiveSession()
+        ? $this->getCreateSessionAction()
+        : $this->getCreateApplicationAction()
     ];
+  }
+
+  protected function hasActiveSession(): bool
+  {
+    return MonthlySession::where('is_current', true)
+      ->where('finalized', false)
+      ->exists();
   }
 
   private function checkDuplicates(array $data): array
   {
-    $status = [];
-
-    $duplicate = Application::where('locality_id', $data['locality_id'])
+    $matches = Application::where('locality_id', $data['locality_id'])
       ->where('sector_id', $data['sector_id'])
       ->where('block', $data['block'])->get();
 
-    foreach ($duplicate as $application) {
+    return $matches->reduce(function ($duplicates, $application) use ($data) {
       $found = Str::position($application->plot_number, $data['plot_number']);
 
-      if (gettype($found) === 'integer') {
-        $status[] = $application;
-      }
-    }
-
-    return $status;
+      return gettype($found) === 'integer'
+        ? [...$duplicates, $application]
+        : $duplicates;
+    }, []);
   }
 
 
+  protected function getCreateSessionAction(): array
+  {
+    return [
+      Action::make('New session')
+        ->schema([
+          Group::make([
+            TextInput::make('title')->required()->columnSpanFull(),
+            DatePicker::make('start_date')->required()->columns(1),
+            DatePicker::make('end_date')->required()->after('start_date')->columns(1),
+          ])
+            ->columns(2)
+        ])
+        ->modalWidth(Width::ExtraLarge)
+        ->action(function (array $data) {
+          $currentSession = MonthlySession::create([
+            ...$data,
+            'is_current' => true,
+            'finalized' => false
+          ]);
+
+          $this->session = $currentSession;
+          return $currentSession;
+        }),
+    ];
+  }
+
+  protected function getCreateApplicationAction(): array
+  {
+    return [
+      CreateAction::make()
+        ->steps(FormService::applicationForm())
+        ->mutateDataUsing(function (array $data) {
+          return [
+            ...$data,
+            'user_id' => Auth::user()->id,
+            ...$this->generateApplicationNumber($data)
+          ];
+        })
+        ->using(fn(array $data, string $model): Model => $model::create($data))
+        ->successNotification(
+          Notification::make()
+            ->success()
+            ->title('Application Created')
+            ->body('The application has been successfully created')
+        )
+    ];
+  }
 
   protected function generatePermitNumbers(): array
   {

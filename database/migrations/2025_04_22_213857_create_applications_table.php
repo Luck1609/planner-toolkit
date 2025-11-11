@@ -22,9 +22,9 @@ return new class extends Migration
       $table->string('firstname');
       $table->string('lastname');
       $table->string('contact');
-      $table->foreignUuid('locality_id')->constrained();
-      $table->foreignUuid('sector_id')->constrained();
-      $table->foreignUuid('monthly_session_id')->constrained();
+      $table->foreignUuid('locality_id')->constrained()->nullOnDelete();
+      $table->foreignUuid('sector_id')->constrained()->nullOnDelete();
+      $table->foreignUuid('monthly_session_id')->constrained()->nullOnDelete();
       $table->string('block');
       $table->string('plot_number');
       $table->integer('shelf')->nullable();

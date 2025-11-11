@@ -16,7 +16,7 @@ return new class extends Migration
       $table->json('contacts');
       $table->string('type');
       $table->longText('message');
-      $table->foreignUuid('user_id')->constrained('users');
+      $table->foreignUuid('user_id')->constrained()->nullOnDelete();
       $table->integer('units_used');
       $table->boolean('status')->default(false); // Processed on not?
       $table->boolean('bulk')->default(false); // If it is bulk sms data should be an array
