@@ -20,6 +20,7 @@ return new class extends Migration
       $table->text('content')->nullable();
       $table->enum('state', ['outgoing', 'incoming'])->nullable();
       $table->enum('status', ['draft', 'published'])->default('draft');
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
       $table->softDeletes();
       $table->timestamps();
     });

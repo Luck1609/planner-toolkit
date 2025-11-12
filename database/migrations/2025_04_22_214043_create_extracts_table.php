@@ -25,6 +25,7 @@ return new class extends Migration
       $table->string('allocation_date');
       $table->string('registration_date');
       $table->string('phone_number');
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
       $table->softDeletes();
       $table->timestamps();
     });

@@ -17,6 +17,8 @@ return new class extends Migration
       $table->string('name');
       $table->string('initials');
       $table->json('blocks');
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
+      $table->softDeletes();
       $table->timestamps();
     });
   }

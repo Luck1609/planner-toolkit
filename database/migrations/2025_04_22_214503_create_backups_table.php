@@ -18,6 +18,7 @@ return new class extends Migration
       $table->boolean('updates')->default(false); // where data was updated or new entry
       $table->boolean('deleted')->default(false); // where data has been deleted
       $table->boolean('processed')->default(false); // true if synced with online server
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
       $table->softDeletes();
       $table->timestamps();
     });

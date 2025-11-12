@@ -20,7 +20,8 @@ return new class extends Migration
       $table->time('time');
       $table->string('venue');
       $table->string('type');
-      $table->json('participants')->nullable();
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
+      $table->softDeletes();
       $table->timestamps();
     });
   }

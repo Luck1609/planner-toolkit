@@ -22,6 +22,8 @@ return new class extends Migration
       $table->enum('panel', ['TSC', 'SPC'])->default('TSC');
       $table->enum('role', ['Chairperson', 'Secretary', 'Member', 'Other'])->default('Member');
       $table->boolean('status')->default(false);
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
+      $table->softDeletes();
       $table->timestamps();
     });
   }

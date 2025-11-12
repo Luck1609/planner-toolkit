@@ -21,6 +21,8 @@ return new class extends Migration
       $table->boolean('status')->default(false); // Processed on not?
       $table->boolean('bulk')->default(false); // If it is bulk sms data should be an array
       $table->dateTime('sent_date')->nullable(); // Processed date
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
+      $table->softDeletes();
       $table->timestamps();
     });
   }

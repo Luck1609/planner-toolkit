@@ -78,7 +78,8 @@ class ManageApplications extends ManageRecords
             'finalized' => false
           ]);
 
-          $this->session = $currentSession;
+          $this->dispatch('refresh');
+          
           return $currentSession;
         }),
     ];

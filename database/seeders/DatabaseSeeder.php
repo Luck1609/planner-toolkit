@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
       SectorSeeder::class,
       UserSeeder::class,
       SettingSeeder::class,
-      MeetingSeeder::class,
+      // MeetingSeeder::class,
     ]);
   }
 }

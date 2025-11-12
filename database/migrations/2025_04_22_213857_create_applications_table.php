@@ -13,7 +13,8 @@ return new class extends Migration
   {
     Schema::create('applications', function (Blueprint $table) {
       $table->uuid('id')->primary();
-      $table->foreignUuid('user_id')->constrained();
+      $table->foreignUuid('user_id')->constrained()->nullOnDelete();
+      $table->foreignUuid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
       $table->string('application_num'); // application number for the given year
       $table->string('session_num');
       $table->string('dev_permit_num')->nullable();
@@ -47,6 +48,7 @@ return new class extends Migration
       $table->boolean('existing')->default(false); // If building already exist [falls under regularization]
       $table->json('use');
       $table->date('approved_on')->nullable();
+      $table->softDeletes();
       $table->timestamps();
     });
   }

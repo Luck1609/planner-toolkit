@@ -18,6 +18,8 @@ return new class extends Migration
       $table->boolean('finalized')->default(false); // Ones finalized, meeting can be scheduled, application status can be set
       $table->date('start_date');
       $table->date('end_date');
+      $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
+      $table->softDeletes();
       $table->timestamps();
     });
   }
