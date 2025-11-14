@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
+use App\DTO\ActiveSessionDTO;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Models\Application;
 use App\Models\MonthlySession;
 use App\Models\Office;
 use App\Models\Sector;
 use App\Services\FormService;
+use App\Services\HelperService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -20,6 +22,7 @@ use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ManageApplications extends ManageRecords
@@ -28,19 +31,17 @@ class ManageApplications extends ManageRecords
 
   protected function getHeaderActions(): array
   {
+    $sessionDto = (new ActiveSessionDTO())();
+
+    Log::info('Session DTO', ['exist' => $sessionDto->exists, 'session' => $sessionDto->session]);
     return [
-      ...!$this->hasActiveSession()
+      ...!$sessionDto->exists
         ? $this->getCreateSessionAction()
         : $this->getCreateApplicationAction()
     ];
   }
 
-  protected function hasActiveSession(): bool
-  {
-    return MonthlySession::where('is_current', true)
-      ->where('finalized', false)
-      ->exists();
-  }
+
 
   private function checkDuplicates(array $data): array
   {
@@ -79,9 +80,15 @@ class ManageApplications extends ManageRecords
           ]);
 
           $this->dispatch('refresh');
-          
+
           return $currentSession;
-        }),
+        })
+        ->successNotification(
+          Notification::make()
+            ->success()
+            ->title('Session Created')
+            ->body('The session has been successfully created')
+        ),
     ];
   }
 

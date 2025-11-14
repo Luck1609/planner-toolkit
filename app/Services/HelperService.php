@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\MonthlySession;
+
 class HelperService
 {
   public static function getBlocks()
