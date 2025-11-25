@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Setting;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class SettingSeeder extends Seeder
 {
@@ -26,7 +24,7 @@ class SettingSeeder extends Seeder
     foreach ($this->settings as $setting) {
       Setting::create([
         ...$setting,
-        'value' => json_encode($setting['value'])
+        'value' => $setting['value']
       ]);
     }
   }

@@ -113,14 +113,14 @@ return [
   ],
   [
     "name" => "otp",
-    "value" => 12, //Set duration when OTP is valid default (12)hrs"
+    "value" => 30, //Set duration when OTP is valid default (30)mins"
   ],
   [
     "name" => "titles",
     "value" => [
       'Mr.',
       'Mrs.',
-      'Miss',
+      'Ms.',
       'Pln.',
       'Dr.',
       'Eng.',
