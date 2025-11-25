@@ -8,5 +8,11 @@ use Filament\Support\Icons\Heroicon;
 
 class SettingsCluster extends Cluster
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+  protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return false;
+  }
 }
