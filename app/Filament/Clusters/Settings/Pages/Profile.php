@@ -14,6 +14,8 @@ class Profile extends Page
 {
   protected string $view = 'filament.clusters.settings.pages.profile';
 
+  protected static ?int $navigationSort = 1;
+
   protected static ?string $cluster = SettingsCluster::class;
 
   protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;

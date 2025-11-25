@@ -18,39 +18,45 @@ use Filament\Tables\Table;
 
 class MinuteResource extends Resource
 {
-    protected static ?string $model = Minute::class;
+  protected static ?string $model = Minute::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'icon-file-description';
+  protected static string|BackedEnum|null $navigationIcon = 'icon-file-description';
 
-    public static function form(Schema $schema): Schema
-    {
-        return MinuteForm::configure($schema);
-    }
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return MinuteInfolist::configure($schema);
-    }
+  public static function shouldRegisterNavigation(): bool
+  {
+    return false;
+  }
 
-    public static function table(Table $table): Table
-    {
-        return MinutesTable::configure($table);
-    }
+  public static function form(Schema $schema): Schema
+  {
+    return MinuteForm::configure($schema);
+  }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+  public static function infolist(Schema $schema): Schema
+  {
+    return MinuteInfolist::configure($schema);
+  }
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => ListMinutes::route('/'),
-            'create' => CreateMinute::route('/create'),
-            'view' => ViewMinute::route('/{record}'),
-            'edit' => EditMinute::route('/{record}/edit'),
-        ];
-    }
+  public static function table(Table $table): Table
+  {
+    return MinutesTable::configure($table);
+  }
+
+  public static function getRelations(): array
+  {
+    return [
+      //
+    ];
+  }
+
+  public static function getPages(): array
+  {
+    return [
+      'index' => ListMinutes::route('/'),
+      'create' => CreateMinute::route('/create'),
+      'view' => ViewMinute::route('/{record}'),
+      'edit' => EditMinute::route('/{record}/edit'),
+    ];
+  }
 }

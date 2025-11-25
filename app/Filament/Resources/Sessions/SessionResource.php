@@ -19,40 +19,43 @@ use Filament\Tables\Table;
 
 class SessionResource extends Resource
 {
-    protected static ?string $model = MonthlySession::class;
+  protected static ?string $model = MonthlySession::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    public static function form(Schema $schema): Schema
-    {
-        return SessionForm::configure($schema);
-    }
+  protected static ?string $navigationLabel = 'Sessions';
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return SessionInfolist::configure($schema);
-    }
+  protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    public static function table(Table $table): Table
-    {
-        return SessionsTable::configure($table);
-    }
+  public static function form(Schema $schema): Schema
+  {
+    return SessionForm::configure($schema);
+  }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+  public static function infolist(Schema $schema): Schema
+  {
+    return SessionInfolist::configure($schema);
+  }
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => ListSessions::route('/'),
-            'create' => CreateSession::route('/create'),
-            'view' => ViewSession::route('/{record}'),
-            'edit' => EditSession::route('/{record}/edit'),
-            'minute' => EditSession::route('/{record}/minute'),
-        ];
-    }
+  public static function table(Table $table): Table
+  {
+    return SessionsTable::configure($table);
+  }
+
+  public static function getRelations(): array
+  {
+    return [
+      //
+    ];
+  }
+
+  public static function getPages(): array
+  {
+    return [
+      'index' => ListSessions::route('/'),
+      'create' => CreateSession::route('/create'),
+      'view' => ViewSession::route('/{record}'),
+      'edit' => EditSession::route('/{record}/edit'),
+      'minute' => EditSession::route('/{record}/minute'),
+    ];
+  }
 }

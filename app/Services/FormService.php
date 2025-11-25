@@ -91,12 +91,7 @@ class FormService
               Group::make(
                 [
                   Select::make('title')
-                    ->options(function () {
-                      $titles = Setting::where('name', 'titles')->first()->value;
-                      $titles = collect($titles)->reduce(fn($allTitles, $title) => [...$allTitles, $title => $title], []);
-                      logger('', ['app-titles' => $titles]);
-                      return $titles;
-                    })
+                    ->options(HelperService::getTitles())
                     ->placeholder('Select role')
                     ->required(),
                   TextInput::make('firstname')

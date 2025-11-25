@@ -8,9 +8,11 @@ use Filament\Pages\Page;
 
 class Storage extends Page
 {
-    protected string $view = 'filament.clusters.settings.pages.storage';
+  protected string $view = 'filament.clusters.settings.pages.storage';
 
-    protected static ?string $cluster = SettingsCluster::class;
+  protected static ?int $navigationSort = 3;
+
+  protected static ?string $cluster = SettingsCluster::class;
 
   protected static string|BackedEnum|null $navigationIcon = 'icon-stack-push';
 }

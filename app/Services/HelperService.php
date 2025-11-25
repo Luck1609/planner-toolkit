@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MonthlySession;
+use App\Models\Setting;
 
 class HelperService
 {
@@ -15,5 +16,11 @@ class HelperService
         ? $blocks
         : [...$blocks, "Block $letter" => "Block $letter"];
     }, []);
+  }
+
+  public static function getTitles(): array
+  {
+    $titles = Setting::where('name', 'titles')->first()->value;
+    return collect($titles)->reduce(fn($allTitles, $title) => [...$allTitles, $title => $title], []);
   }
 }

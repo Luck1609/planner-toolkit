@@ -129,6 +129,16 @@ return [
     ],
   ],
   [
+    "name" => "committee-roles",
+    "value" => [
+      'Chairman',
+      'Secretary',
+      'Member',
+      'Co-opted member',
+      'Others'
+    ],
+  ],
+  [
     "name" => "office",
     "value" => [
       'name' => '',

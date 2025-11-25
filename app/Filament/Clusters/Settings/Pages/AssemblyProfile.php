@@ -21,6 +21,8 @@ class AssemblyProfile extends Page
 
   protected static ?string $title = 'Assembly Profile';
 
+  protected static ?int $navigationSort = 2;
+
   protected string $view = 'filament.clusters.settings.pages.assembly-profile';
 
   protected static ?string $cluster = SettingsCluster::class;
