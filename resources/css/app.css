@@ -68,3 +68,7 @@ select:focus[data-flux-control] {
 .fi-color-primary {
   @apply text-white!
 }
+
+.info-text {
+  @apply p-2 h-44!;
+}

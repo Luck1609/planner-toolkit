@@ -7,6 +7,7 @@ use App\DTO\MeetingTypeDTO;
 use App\Filament\Resources\Sessions\SessionResource;
 use App\MeetingTypeEnum;
 use App\Models\MonthlySession;
+use App\Services\FormService;
 use App\Services\HelperService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -56,11 +57,28 @@ class ListSessions extends ListRecords
   private function meetingButtons(ActiveSessionDTO $activeSession) //: Action
   {
     $meetings = MeetingTypeDTO::setMeeting($activeSession->session->meetings);
-    logger('', ['meetings' => $meetings->tsc]);
+
+    $isModal = true;
 
     if ($meetings->tsc === null || $meetings->spc === null)
       return Action::make($meetings->tsc === null ? 'tsc' : 'spc')
+          ->modal()
           ->label('Schedule '. ($meetings->tsc === null ? 'TSC' : 'SPC') .' meeting')
+          ->steps(FormService::meetingForm($isModal))
+          ->skippableSteps()
+          ->fillForm([
+            'title' => '',
+            'type' => $meetings->tsc === null ? 'tsc' : 'spc',
+            'agenda' => '',
+            'date' => '',
+            'time' => '',
+            'venue' => '',
+            'participants' => [],
+          ])
+          ->action(function (array $args) use ($activeSession) {
+            logger('', ['args' => $args]);
+            // logger('', ['args' => $activeSession->session]);
+          })
           ->icon('icon-calendar-time');
 
     return Action::make('End session')

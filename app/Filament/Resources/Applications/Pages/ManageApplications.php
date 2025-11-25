@@ -33,7 +33,6 @@ class ManageApplications extends ManageRecords
   {
     $sessionDto = (new ActiveSessionDTO())();
 
-    Log::info('Session DTO', ['exist' => $sessionDto->exists, 'session' => $sessionDto->session]);
     return [
       ...!$sessionDto->exists
         ? $this->getCreateSessionAction()

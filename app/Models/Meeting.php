@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MeetingTypeEnum;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,9 +16,9 @@ class Meeting extends Model
   protected $keyType = 'string';
   public $incrementing = false;
 
-
   protected $casts = [
     'participants' => 'array',
+    'type' => MeetingTypeEnum::class
   ];
 
   public function session(): BelongsTo
@@ -28,5 +29,10 @@ class Meeting extends Model
   public function minutes(): HasMany
   {
     return $this->hasMany(Minute::class);
+  }
+
+  public function participants(): HasMany
+  {
+    return $this->hasMany(Participant::class);
   }
 }

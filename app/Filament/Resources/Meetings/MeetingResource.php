@@ -27,12 +27,12 @@ class MeetingResource extends Resource
 
   protected static ?string $recordTitleAttribute = 'Meetings';
 
-  public static function form(Schema $schema): Schema
-  {
-    $isModal = true;
-    return $schema
-      ->components(FormService::meetingForm($isModal));
-  }
+  // public static function form(Schema $schema): Schema
+  // {
+  //   $isModal = true;
+  //   return $schema
+  //     ->components(FormService::meetingForm($isModal));
+  // }
 
   public static function table(Table $table): Table
   {

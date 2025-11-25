@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Committee;
 use App\Models\Locality;
 use App\Models\Sector;
 use Filament\Forms\Components\CheckboxList;
@@ -15,44 +16,78 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
-
-use function Livewire\Volt\placeholder;
 
 class FormService
 {
-  public static function meetingForm(?bool $modalForm = false): array
+  public static function meetingForm(?bool $isCustom = false): array
   {
     return [
-      Wizard::make([
-        Step::make('Meeting Information')
-          ->schema([
-            TextInput::make('title')
-              ->placeholder('Title for this meeting')
-              ->required()
-              ->columnSpan(['lg' => 2]),
-            Select::make('type')
-              ->placeholder('Select meeting type')
-              ->options([
-                'spc' => 'SPC',
-                'tsc' => 'TSC',
-                'custom' => 'Custom'
-              ]),
-            TextInput::make('agenda')
-              ->placeholder('Agenda for this meeting')
-              ->columnSpan(['lg' => 2]),
-            TextInput::make('venue')->required(),
+      Step::make('Meeting Information')
+        ->schema([
+          TextInput::make('title')
+            ->placeholder('Title for this meeting')
+            ->required()
+            ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
+          ...!$isCustom
+            ? [
+              Select::make('type')
+                ->placeholder('Select meeting type')
+                ->options([
+                  'spc' => 'SPC',
+                  'tsc' => 'TSC',
+                  'custom' => 'Custom'
+                ]),
+            ]
+            : [],
+          TextInput::make('agenda')
+            ->placeholder('Agenda for this meeting')
+            ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
+          Group::make([
+            TextInput::make('venue')
+              ->columnSpan(3)
+              ->required(),
             Hidden::make('monthly_session_id'),
-            DatePicker::make('date')->required(),
-            TimePicker::make('time')->required()
-          ])->columns(['lg' => 3]),
+            DatePicker::make('date')
+              ->columnSpan(2)
+              ->required(),
+            TimePicker::make('time')
+              ->columnSpan(2)
+              ->required()
+          ])
+            ->columns(7)
+            ->columnSpanFull()
+        ])->columns(['lg' => 3]),
 
-        Step::make('Participants Information')
-          ->schema([
-            Repeater::make('participants')
-              ->schema([
-                Group::make([
+      Step::make('Committee Members')
+        ->schema([
+          Repeater::make('participants')
+            ->schema([
+              Select::make('member_details')
+                ->label('')
+                ->searchable()
+                ->options(Committee::all()->select('firstname', 'lastname', 'id', 'title')->reduce(
+                  fn($members, $member) => [
+                    ...$members,
+                    $member['id'] => $member['title'] . ' ' . $member['firstname'] . ' ' . $member['lastname']
+                  ],
+                  []
+                )),
+            ])
+            ->required()
+            ->minItems(2)
+            ->grid(2)
+            ->columnSpanFull()
+            ->addActionLabel('Add participant'),
+        ])
+        ->columns(['lg' => 3])
+        ->columnSpanFull(),
+      Step::make('New Participants')
+        ->schema([
+          Repeater::make('new_participants')
+            ->schema([
+              Group::make(
+                [
                   Select::make('title')
                     ->placeholder('Select title')
                     ->options([
@@ -66,23 +101,42 @@ class FormService
                       'Esq' => 'Esq',
                     ])
                     ->required(),
-                  TextInput::make('firstname')->required()->placeholder('Type in member\s firstname')
-                    ->columnSpan(['lg' => 2]),
-                ])->columns(['lg' => 3]),
-                Group::make([
-                  TextInput::make('lastname')->required()->placeholder('Type in member\s lastname'),
-                  TextInput::make('contact')->label('Phone number')->required()->placeholder('024XXXXXXX'),
-                ])->columns(['lg' => $modalForm ? 1 : 2]),
-              ])
-              ->required()
-              ->minItems(2)
-              ->grid(2)
-              ->columnSpanFull()
-              ->addActionLabel('Add participant')
-          ])
-          ->columns(['lg' => 3])
-          ->columnSpanFull(),
-      ])->columnSpanFull()
+                  TextInput::make('firstname')
+                    ->required()
+                    ->placeholder('Member\'s firstname'),
+                  TextInput::make('lastname')
+                    ->required()
+                    ->placeholder('Member\'s lastname'),
+                  TextInput::make('designation')
+                    ->nullable()
+                    ->placeholder('Designation'),
+                  Select::make('role')
+                    ->placeholder('Select role')
+                    ->options([
+                      'Mr' => 'Mr',
+                      'Mrs' => 'Mrs',
+                      'Miss' => 'Miss',
+                      'Dr' => 'Dr',
+                      'Prof' => 'Prof',
+                      'Eng' => 'Eng',
+                      'Pln' => 'Pln',
+                      'Esq' => 'Esq',
+                    ])
+                    ->required(),
+                  TextInput::make('contact')
+                    ->label('Phone number')
+                    ->required()
+                    ->placeholder('024XXXXXXX'),
+                ]
+              )
+                ->columns(2),
+            ])
+            ->required()
+            ->minItems(2)
+            ->grid(2)
+            ->columnSpanFull()
+            ->addActionLabel('Add participant')
+        ])
     ];
   }
 

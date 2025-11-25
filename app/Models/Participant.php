@@ -14,11 +14,21 @@ class Participant extends Model
   public $incrementing = false;
 
   protected $fillable = [
+    'firstname',
+    'lastname',
+    'phone_number',
+    'email',
+    'designation',
+    'meeting_id',
     'committee_id',
-    'data',
   ];
 
   public function meeting(): BelongsTo
+  {
+    return $this->belongsTo(Meeting::class);
+  }
+
+  public function committee(): BelongsTo
   {
     return $this->belongsTo(Committee::class);
   }
