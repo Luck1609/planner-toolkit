@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Committees;
 
+use App\Enums\MeetingTypeEnum;
 use App\Filament\Resources\Committees\Pages\ManageCommittees;
 use App\Models\Committee;
 use BackedEnum;
@@ -79,9 +80,9 @@ class CommitteeResource extends Resource
         TextColumn::make('email')->label('Email')->searchable(),
         TextColumn::make('panel')
           ->badge()
-          ->color(fn(string $state) => match ($state) {
-            'TSC' => 'info',
-            'SPC' => 'primary',
+          ->color(fn($state) => match ($state) {
+            MeetingTypeEnum::TSC => 'info',
+            MeetingTypeEnum::SPC => 'primary',
           })
       ])
       ->filters([

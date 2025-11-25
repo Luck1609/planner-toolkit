@@ -32,11 +32,12 @@ class ManageMeetings extends ManageRecords
             'venue' => '',
             'date' => '',
             'time' => '',
-            'participants' => [],
-            'new_participants' => []
+            // 'participants' => [],
+            // 'new_participants' => []
           ])
         ])
         ->using(function (array $data) {
+          logger('', ['create-data' => $data]);
           $participants = Committee::whereIn($data['participants'])->get();
           $participants = $participants->map(fn ($participant) => [
             'participant_id' => $participant->id,

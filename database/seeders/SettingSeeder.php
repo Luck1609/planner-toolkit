@@ -26,7 +26,7 @@ class SettingSeeder extends Seeder
     foreach ($this->settings as $setting) {
       Setting::create([
         ...$setting,
-        'value' => json_encode($setting['value'])
+        'value' => $setting['value']
       ]);
     }
   }

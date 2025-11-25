@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Committee;
 use App\Models\Locality;
 use App\Models\Sector;
+use App\Models\Setting;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -45,6 +46,7 @@ class FormService
             ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
           Group::make([
             TextInput::make('venue')
+              ->placeholder('Meeting venue')
               ->columnSpan(3)
               ->required(),
             Hidden::make('monthly_session_id'),
@@ -89,17 +91,13 @@ class FormService
               Group::make(
                 [
                   Select::make('title')
-                    ->placeholder('Select title')
-                    ->options([
-                      'Mr' => 'Mr',
-                      'Mrs' => 'Mrs',
-                      'Miss' => 'Miss',
-                      'Dr' => 'Dr',
-                      'Prof' => 'Prof',
-                      'Eng' => 'Eng',
-                      'Pln' => 'Pln',
-                      'Esq' => 'Esq',
-                    ])
+                    ->options(function () {
+                      $titles = Setting::where('name', 'titles')->first()->value;
+                      $titles = collect($titles)->reduce(fn($allTitles, $title) => [...$allTitles, $title => $title], []);
+                      logger('', ['app-titles' => $titles]);
+                      return $titles;
+                    })
+                    ->placeholder('Select role')
                     ->required(),
                   TextInput::make('firstname')
                     ->required()
@@ -111,17 +109,11 @@ class FormService
                     ->nullable()
                     ->placeholder('Designation'),
                   Select::make('role')
+                    ->options(function () {
+                      // $titles = Setting::where('name', 'titles')->first()->value;
+                      // return collect($titles)->map(fn($title) => [$title => $title]);
+                    })
                     ->placeholder('Select role')
-                    ->options([
-                      'Mr' => 'Mr',
-                      'Mrs' => 'Mrs',
-                      'Miss' => 'Miss',
-                      'Dr' => 'Dr',
-                      'Prof' => 'Prof',
-                      'Eng' => 'Eng',
-                      'Pln' => 'Pln',
-                      'Esq' => 'Esq',
-                    ])
                     ->required(),
                   TextInput::make('contact')
                     ->label('Phone number')
