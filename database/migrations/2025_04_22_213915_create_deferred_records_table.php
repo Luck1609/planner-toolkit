@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('deferred_records', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->longText('comments');
       $table->foreignUuid('application_id')->constrained()->onDelete('CASCADE');
       $table->date('deferred_on');

@@ -23,4 +23,10 @@ class HelperService
     $titles = Setting::where('name', 'titles')->first()->value;
     return collect($titles)->reduce(fn($allTitles, $title) => [...$allTitles, $title => $title], []);
   }
+
+  public static function getCommitteeRoles(): array
+  {
+    $roles = Setting::where('name', 'committee-roles')->first()->value;
+    return collect($roles)->reduce(fn($allRoles, $role) => [...$allRoles, $role => $role], []);
+  }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('districts', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->string('name');
       $table->foreignUuid('region_id')->constrained('regions')->nullOnDelete();
       // $table->decimal('lat', 10, 7);

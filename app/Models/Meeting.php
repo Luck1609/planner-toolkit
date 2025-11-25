@@ -16,6 +16,9 @@ class Meeting extends Model
   protected $keyType = 'string';
   public $incrementing = false;
 
+
+  protected $guarded = [];
+
   protected $casts = [
     'participants' => 'array',
     'type' => MeetingTypeEnum::class

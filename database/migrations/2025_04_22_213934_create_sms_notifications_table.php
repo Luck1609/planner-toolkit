@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('sms_notifications', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->json('contacts');
       $table->string('type');
       $table->longText('message');

@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('offices', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->foreignUuid('region_id')->references('id')->on('regions')->nullOnDelete();
       $table->foreignUuid('district_id')->references('id')->on('districts')->nullOnDelete();
       $table->string('name');

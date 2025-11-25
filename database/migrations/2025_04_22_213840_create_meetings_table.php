@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('meetings', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->foreignUuid('monthly_session_id')->nullable()->constrained()->nullOnDelete();
       $table->string('title');
       $table->text('agenda')->nullable();

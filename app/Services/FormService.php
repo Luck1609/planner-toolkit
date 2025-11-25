@@ -40,7 +40,7 @@ class FormService
                   'custom' => 'Custom'
                 ]),
             ]
-            : [],
+            : [Hidden::make('type')],
           TextInput::make('agenda')
             ->placeholder('Agenda for this meeting')
             ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
@@ -65,7 +65,7 @@ class FormService
         ->schema([
           Repeater::make('participants')
             ->schema([
-              Select::make('member_details')
+              Select::make('participant_id')
                 ->label('')
                 ->searchable()
                 ->options(Committee::all()->select('firstname', 'lastname', 'id', 'title')->reduce(
@@ -104,13 +104,10 @@ class FormService
                     ->nullable()
                     ->placeholder('Designation'),
                   Select::make('role')
-                    ->options(function () {
-                      // $titles = Setting::where('name', 'titles')->first()->value;
-                      // return collect($titles)->map(fn($title) => [$title => $title]);
-                    })
+                    ->options(HelperService::getCommitteeRoles())
                     ->placeholder('Select role')
                     ->required(),
-                  TextInput::make('contact')
+                  TextInput::make('phone_number')
                     ->label('Phone number')
                     ->required()
                     ->placeholder('024XXXXXXX'),
@@ -118,8 +115,6 @@ class FormService
               )
                 ->columns(2),
             ])
-            ->required()
-            ->minItems(2)
             ->grid(2)
             ->columnSpanFull()
             ->addActionLabel('Add participant')

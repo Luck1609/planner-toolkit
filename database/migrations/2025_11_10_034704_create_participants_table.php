@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('participants', function (Blueprint $table) {
       $table->uuid('id')->unique()->primary();
       $table->foreignUuid('meeting_id')->nullable()->constrained()->onDelete('CASCADE');
-      $table->foreignUuid('participant_id')->nullable()->references('id')->on('committees')->nullOnDelete();
+      $table->foreignUuid('committee_id')->nullable()->constrained()->nullOnDelete();
       $table->string('firstname');
       $table->string('lastname');
       $table->string('phone_number');

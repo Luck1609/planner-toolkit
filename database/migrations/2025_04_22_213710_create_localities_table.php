@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('localities', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->string('name');
       $table->string('initials');
       $table->foreignUUid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();

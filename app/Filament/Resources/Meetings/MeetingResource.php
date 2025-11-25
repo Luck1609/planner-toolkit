@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Meetings;
 
 use App\Filament\Resources\Meetings\Pages\ManageMeetings;
 use App\Models\Meeting;
+use App\Models\Participant;
 use App\Services\FormService;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
@@ -37,14 +38,13 @@ class MeetingResource extends Resource
   public static function table(Table $table): Table
   {
     return $table
-      ->recordTitleAttribute('Meetings')
       ->columns([
         TextColumn::make('title')->searchable(),
         TextColumn::make('venue')->searchable(),
         TextColumn::make('date')->date()->searchable(),
-        TextColumn::make('participant')
+        TextColumn::make('participants')
           ->label('Meeting Participants')
-          ->default(fn(Model $meeting) => count($meeting->participants)),
+          ->default(fn (Model $meeting) => Participant::where('meeting_id', $meeting->id)->count()),
       ])
       ->filters([
         //

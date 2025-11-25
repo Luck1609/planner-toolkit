@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('applications', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->foreignUuid('user_id')->constrained()->nullOnDelete();
       $table->foreignUuid('deleted_by')->nullable()->references('id')->on('users')->nullOnDelete();
       $table->string('application_num'); // application number for the given year

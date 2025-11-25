@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('monthly_sessions', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->boolean('is_current')->default(true); // Set to false ones the session has elapsed
       $table->string('title');
       $table->boolean('finalized')->default(false); // Ones finalized, meeting can be scheduled, application status can be set

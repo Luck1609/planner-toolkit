@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('minutes', function (Blueprint $table) {
-      $table->uuid('id');
+      $table->uuid('id')->unique()->primary();
       $table->string('title')->nullable();
       $table->string('venue')->nullable();
       $table->date('date')->nullable();

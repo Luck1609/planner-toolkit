@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('backups', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->string('model_name');
       $table->text('data');
       $table->boolean('updates')->default(false); // where data was updated or new entry

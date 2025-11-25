@@ -12,7 +12,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('sectors', function (Blueprint $table) {
-      $table->uuid('id')->primary();
+      $table->uuid('id')->unique()->primary();
       $table->foreignUuid('locality_id')->constrained('localities')->onDelete('CASCADE');
       $table->string('name');
       $table->string('initials');

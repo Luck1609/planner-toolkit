@@ -11,6 +11,7 @@ use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Illuminate\Support\Arr;
 
 class ManageMeetings extends ManageRecords
 {
@@ -32,32 +33,29 @@ class ManageMeetings extends ManageRecords
             'venue' => '',
             'date' => '',
             'time' => '',
-            // 'participants' => [],
-            // 'new_participants' => []
           ])
         ])
-        ->using(function (array $data) {
-          logger('', ['create-data' => $data]);
-          $participants = Committee::whereIn($data['participants'])->get();
+        ->action(function (array $data) {
+          $participantIds = collect(Arr::pull($data, 'participants', []))->pluck('participant_id');
+
+          $participants = Committee::whereIn('id', $participantIds)->get();
+
           $participants = $participants->map(fn ($participant) => [
-            'participant_id' => $participant->id,
+            'committee_id' => $participant->id,
             'title' => $participant->title,
             'firstname' => $participant->firstname,
             'lastname' => $participant->lastname,
-            'contact' => $participant->contact,
+            'phone_number' => $participant->contact,
             'designation' => $participant->designation,
             'role' => $participant->role,
-          ]);
+          ])->toArray();
 
-          $participants = array_merge($participants, $data['new_participants']);
-          unset($data['new_participants'], $data['participants']);
+          $participants = array_merge($participants, Arr::pull($data, 'new_participants', []));
 
           $meeting = Meeting::create($data);
 
           $meeting->participants()->createMany($participants);
-        })
-        ->action(function (array $data) {
-          logger('', ['meeting-data' => $data]);
+          return $meeting;
         })
         ->modalWidth(Width::TwoExtraLarge)
         ->skippableSteps(),
