@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+
+use App\Enums\MeetingTypeEnum;
 use App\Models\Committee;
 use App\Models\Locality;
 use App\Models\Sector;
@@ -19,109 +21,8 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard\Step;
 
-class FormService
+class ApplicationService
 {
-  public static function meetingForm(?bool $isCustom = false): array
-  {
-    return [
-      Step::make('Meeting Information')
-        ->schema([
-          TextInput::make('title')
-            ->placeholder('Title for this meeting')
-            ->required()
-            ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
-          ...!$isCustom
-            ? [
-              Select::make('type')
-                ->placeholder('Select meeting type')
-                ->options([
-                  'spc' => 'SPC',
-                  'tsc' => 'TSC',
-                  'custom' => 'Custom'
-                ]),
-            ]
-            : [Hidden::make('type')],
-          TextInput::make('agenda')
-            ->placeholder('Agenda for this meeting')
-            ->columnSpan(['lg' => !$isCustom ? 2 : 3]),
-          Group::make([
-            TextInput::make('venue')
-              ->placeholder('Meeting venue')
-              ->columnSpan(3)
-              ->required(),
-            Hidden::make('monthly_session_id'),
-            DatePicker::make('date')
-              ->columnSpan(2)
-              ->required(),
-            TimePicker::make('time')
-              ->columnSpan(2)
-              ->required()
-          ])
-            ->columns(7)
-            ->columnSpanFull()
-        ])->columns(['lg' => 3]),
-
-      Step::make('Committee Members')
-        ->schema([
-          Repeater::make('participants')
-            ->schema([
-              Select::make('participant_id')
-                ->label('')
-                ->searchable()
-                ->options(Committee::all()->select('firstname', 'lastname', 'id', 'title')->reduce(
-                  fn($members, $member) => [
-                    ...$members,
-                    $member['id'] => $member['title'] . ' ' . $member['firstname'] . ' ' . $member['lastname']
-                  ],
-                  []
-                )),
-            ])
-            ->required()
-            ->minItems(2)
-            ->grid(2)
-            ->columnSpanFull()
-            ->addActionLabel('Add participant'),
-        ])
-        ->columns(['lg' => 3])
-        ->columnSpanFull(),
-      Step::make('New Participants')
-        ->schema([
-          Repeater::make('new_participants')
-            ->schema([
-              Group::make(
-                [
-                  Select::make('title')
-                    ->options(HelperService::getTitles())
-                    ->placeholder('Select role')
-                    ->required(),
-                  TextInput::make('firstname')
-                    ->required()
-                    ->placeholder('Member\'s firstname'),
-                  TextInput::make('lastname')
-                    ->required()
-                    ->placeholder('Member\'s lastname'),
-                  TextInput::make('designation')
-                    ->nullable()
-                    ->placeholder('Designation'),
-                  Select::make('role')
-                    ->options(HelperService::getCommitteeRoles())
-                    ->placeholder('Select role')
-                    ->required(),
-                  TextInput::make('phone_number')
-                    ->label('Phone number')
-                    ->required()
-                    ->placeholder('024XXXXXXX'),
-                ]
-              )
-                ->columns(2),
-            ])
-            ->grid(2)
-            ->columnSpanFull()
-            ->addActionLabel('Add participant')
-        ])
-    ];
-  }
-
   public static function applicationForm(): array
   {
     return [

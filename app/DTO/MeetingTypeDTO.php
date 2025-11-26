@@ -18,7 +18,11 @@ class MeetingTypeDTO
 
   public static function setMeeting(Collection $meetings): static
   {
-    $meetingData = $meetings->reduce(fn ($allMeetings, $meeting) => [...$allMeetings, $meeting->type => $meeting], []);
+    $meetingData = $meetings
+      ->reduce(
+        fn($allMeetings, $meeting) => [...$allMeetings, data_get($meeting, 'type')?->value => $meeting],
+        []
+      );
 
     return new static(
       tsc: Arr::get($meetingData, 'tsc', null),

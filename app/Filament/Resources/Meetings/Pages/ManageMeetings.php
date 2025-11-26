@@ -7,6 +7,7 @@ use App\Filament\Resources\Meetings\MeetingResource;
 use App\Models\Committee;
 use App\Models\Meeting;
 use App\Services\FormService;
+use App\Services\MeetingService;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Schema;
@@ -19,46 +20,13 @@ class ManageMeetings extends ManageRecords
 
   protected function getHeaderActions(): array
   {
-    $isCustom = true;
-
     return [
       CreateAction::make()
         ->modal()
-        ->steps(FormService::meetingForm($isCustom))
-        ->mountUsing(fn (Schema $form) => [
-          $form->fill([
-            'title' => '',
-            'type' => MeetingTypeEnum::CUSTOM,
-            'agenda' => '',
-            'venue' => '',
-            'date' => '',
-            'time' => '',
-          ])
-        ])
-        ->action(function (array $data) {
-          $participantIds = collect(Arr::pull($data, 'participants', []))->pluck('participant_id');
-
-          $participants = Committee::whereIn('id', $participantIds)->get();
-
-          $participants = $participants->map(fn ($participant) => [
-            'committee_id' => $participant->id,
-            'title' => $participant->title,
-            'firstname' => $participant->firstname,
-            'lastname' => $participant->lastname,
-            'phone_number' => $participant->contact,
-            'designation' => $participant->designation,
-            'role' => $participant->role,
-          ])->toArray();
-
-          $participants = array_merge($participants, Arr::pull($data, 'new_participants', []));
-
-          $meeting = Meeting::create($data);
-
-          $meeting->participants()->createMany($participants);
-          return $meeting;
-        })
-        ->modalWidth(Width::TwoExtraLarge)
-        ->skippableSteps(),
+        ->steps(MeetingService::meetingForm())
+        ->mountUsing(fn (Schema $form) => $form->fill(MeetingService::formFiller(MeetingTypeEnum::CUSTOM)))
+        ->action(fn (array $data) => MeetingService::saveRecord($data))
+        ->modalWidth(Width::TwoExtraLarge),
     ];
   }
 }
