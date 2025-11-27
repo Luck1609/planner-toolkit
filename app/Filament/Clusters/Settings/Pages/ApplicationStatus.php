@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Settings\Pages;
 
 use App\Filament\Clusters\Settings\SettingsCluster;
+use Filament\Pages\Page;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -10,7 +11,6 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
@@ -19,23 +19,18 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 use UnitEnum;
 
-class Titles extends Page implements HasTable, HasActions
+class ApplicationStatus extends Page
 {
-  use InteractsWithTable, InteractsWithActions;
-
-  protected string $view = 'filament.clusters.settings.pages.titles';
+    protected string $view = 'filament.clusters.settings.pages.application-status';
 
   protected static ?string $cluster = SettingsCluster::class;
 
   protected static string | UnitEnum | null $navigationGroup = 'Others';
 
-  protected static string|BackedEnum|null $navigationIcon = 'icon-rosette-discount-check';
-
-
-  protected static ?int $navigationSort = 1;
+  protected static string|BackedEnum|null $navigationIcon = 'icon-progress-help';
+  protected static ?int $navigationSort = 2;
 
   protected function getHeaderActions(): array
   {

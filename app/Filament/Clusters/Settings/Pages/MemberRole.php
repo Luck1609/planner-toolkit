@@ -10,7 +10,6 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
@@ -33,6 +32,8 @@ class MemberRole extends Page implements HasTable, HasActions
   protected static ?string $cluster = SettingsCluster::class;
 
   protected static string | UnitEnum | null $navigationGroup = 'Others';
+
+  protected static ?int $navigationSort = 3;
 
   protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserPlus;
 
