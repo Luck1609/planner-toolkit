@@ -11,8 +11,8 @@ class ActiveSessionDTO
    */
   public function __construct(
     public bool $exists = false,
-    public bool $finalized = false,
-    public bool $active = false,
+    public ?bool $finalized = false,
+    public ?bool $active = false,
     public ?MonthlySession $session = null
   ) {}
 
@@ -24,8 +24,8 @@ class ActiveSessionDTO
     return new static(
       exists: $session !== null,
       session: $session,
-      finalized: $session->finalized,
-      active: $session->is_current,
+      finalized: $session?->finalized ?: false,
+      active: $session?->is_current ?: false,
     );
   }
 }
