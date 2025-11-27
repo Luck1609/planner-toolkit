@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Applications;
 
+use App\ActiveSessionTrait;
 use App\Filament\Resources\Applications\Pages\ManageApplications;
 use App\Models\Application;
 use App\Models\MonthlySession;
@@ -9,6 +10,7 @@ use App\Services\FormService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -18,6 +20,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -25,17 +28,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class ApplicationResource extends Resource
 {
+  use ActiveSessionTrait;
+
   protected static ?string $model = Application::class;
 
   protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
   protected static ?string $recordTitleAttribute = 'Applications';
 
-  // public static function form(Schema $schema): Schema
-  // {
-  //   return $schema
-  //     ->components(FormService::applicationForm());
-  // }
 
   public static function table(Table $table): Table
   {
@@ -75,13 +75,25 @@ class ApplicationResource extends Resource
           DeleteAction::make(),
         ])
       ])
-      ->toolbarActions([
-        BulkActionGroup::make([
-          DeleteBulkAction::make(),
-        ]),
-      ])
+      ->toolbarActions(
+        !(new self())->sessionMeeting()->tsc
+          ? [
+            BulkAction::make('Recommend')
+              ->outlined()
+              ->icon(Heroicon::OutlinedCheckBadge),
+            BulkAction::make('Defer')
+              ->outlined()
+              ->color(Color::Amber)
+              ->icon(Heroicon::OutlinedXCircle),
+            BulkAction::make('Reject')
+              ->outlined()
+              ->color(Color::Red)
+              ->icon(Heroicon::OutlinedNoSymbol)
+          ]
+          : []
+      )
       ->headerActions([
-        
+
       ]);
   }
 

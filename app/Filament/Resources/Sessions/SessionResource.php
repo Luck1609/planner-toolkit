@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sessions;
 
+use App\ActiveSessionTrait;
 use App\DTO\ActiveSessionDTO;
 use App\Filament\Resources\Sessions\Pages\ManageSessions;
 use App\Models\Session;
@@ -29,6 +30,8 @@ use Filament\Tables\Table;
 
 class SessionResource extends Resource
 {
+  use ActiveSessionTrait;
+
   protected static ?string $model = Session::class;
 
   protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -112,7 +115,7 @@ class SessionResource extends Resource
       ->recordActions([
         ActionGroup::make([
           ViewAction::make(),
-          ...(new ActiveSessionDTO())->active
+          (new self())->sessionIsActive()
             ? [EditAction::make()]
             : [],
           Action::make('generate report')
