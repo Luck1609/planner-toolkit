@@ -5,12 +5,15 @@ namespace App\Filament\Clusters\Settings\Pages;
 use App\Filament\Clusters\Settings\SettingsCluster;
 use Filament\Pages\Page;
 use App\Models\Setting;
+use App\Services\HelperService;
+use App\Services\SettingsService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
@@ -19,11 +22,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Support\Arr;
 use UnitEnum;
 
-class ApplicationStatus extends Page
+class ApplicationStatus extends Page implements HasTable, HasActions
 {
-    protected string $view = 'filament.clusters.settings.pages.application-status';
+  use InteractsWithActions, InteractsWithTable;
+
+  protected string $view = 'filament.clusters.settings.pages.application-status';
 
   protected static ?string $cluster = SettingsCluster::class;
 
@@ -32,22 +38,44 @@ class ApplicationStatus extends Page
   protected static string|BackedEnum|null $navigationIcon = 'icon-progress-help';
   protected static ?int $navigationSort = 2;
 
+  private string $redirectUrl = '/settings/application-status';
+
   protected function getHeaderActions(): array
   {
     return [
-      Action::make('add title')
+      Action::make('add Status')
         ->icon(Heroicon::OutlinedPlus)
         ->modal()
-        ->schema([
-          TextInput::make('name')
-            ->placeholder('Title name (Mr. Dr. Esq...)')
-        ])
+        ->mountUsing(function (Schema $form) {
+          $applicationStatus = Setting::where('name', 'application-status')->first()?->value ?: [];
+
+          $form->fill([
+            'name' => '',
+            'sort_order' => count($applicationStatus) + 1
+          ]);
+        })
+        ->schema(SettingsService::applicationStatusForm())
         ->action(function (array $data) {
-          $titles = Setting::where('name', 'titles')->first();
+          $applicationStatus = Setting::where('name', 'application-status')->first();
 
-          $this->refresh();
+          logger('', ['create-status' => $data]);
 
-          return $titles->update(['value' => [...$titles->value, ...$data]]);
+          $sortOrder = $applicationStatus?->value ? count($applicationStatus->value) + 1 : 1;
+          $applicationStatus->update(['value' => [
+            ...$applicationStatus->value ?: [],
+            [
+              ...$data,
+              'sort_order' => $sortOrder
+            ]
+          ]]);
+
+          HelperService::sendNotification(
+            title: 'Status Created',
+            body: 'Application status has been successfully updated'
+          )
+            ->send();
+
+          return redirect($this->redirectUrl);
         })
         ->modalWidth(Width::Large)
     ];
@@ -57,14 +85,12 @@ class ApplicationStatus extends Page
   {
     return $table
       ->columns([
-        TextColumn::make('name')->searchable()
+        TextColumn::make('name')->searchable(),
+        TextColumn::make('sort_order')
       ])
       ->records(function () {
-        $settings = Setting::where('name', 'titles')->first();
-
-        return collect($settings->value)
-          ->map(fn($title) => ['name' => $title])
-          ->toArray();
+        $settings = Setting::where('name', 'application-status')->first();
+        return $settings->value;
       })
       ->recordActions([
         Action::make('Edit')
@@ -76,20 +102,30 @@ class ApplicationStatus extends Page
           ]))
           ->schema([
             Hidden::make('current_name'),
-            TextInput::make('name')
-              ->placeholder('Title name (Mr. Dr. Esq...)')
+            ...SettingsService::applicationStatusForm()
           ])
           ->action(function (array $data) {
-            logger('edit-data', $data);
-            $titles = Setting::where('name', 'titles')->first();
+            $applicationStatus = Setting::where('name', 'application-status')->first();
 
-            $value = collect($titles->value)->reduce(fn($values, $value) => [
+            $id = Arr::pull($data, 'current_name');
+
+            $value = collect($applicationStatus->value)->reduce(fn($values, $value) => [
               ...$values,
-              $value === $data['current_name'] ? $data['name'] : $value
+              $value['name'] === $id
+                ? $data
+                : $value
             ], []);
 
-            $this->refresh();
-            return $titles->update(['value' => $value]);
+            $applicationStatus->update(['value' => $value]);
+
+
+            HelperService::sendNotification(
+              title: 'Status Updated',
+              body: 'Application status has been successfully updatedted'
+            )
+              ->send();
+
+            return redirect($this->redirectUrl);
           })
           ->modalWidth(Width::Large),
         Action::make('Delete')
@@ -97,15 +133,23 @@ class ApplicationStatus extends Page
           ->color(Color::Red)
           ->requiresConfirmation()
           ->action(function ($record) {
-            $settings = Setting::where('name', 'titles')->first();
+            $settings = Setting::where('name', 'application-status')->first();
 
             // Remove the record from the JSON list
             $settings->value = collect($settings->value)
-              ->reject(fn($item) => $item === $record['name'])
+              ->reject(fn($item) => $item['name'] === $record['name'])
               ->values()
               ->toArray();
 
             $settings->save();
+
+            HelperService::sendNotification(
+              title: 'Status Deleted',
+              body: 'Application status has been successfully deleted'
+            )
+              ->send();
+
+            return redirect($this->redirectUrl);
           })
       ]);
   }

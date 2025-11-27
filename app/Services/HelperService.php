@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\MonthlySession;
 use App\Models\Setting;
+use Filament\Notifications\Notification;
 
 class HelperService
 {
@@ -28,5 +29,14 @@ class HelperService
   {
     $roles = Setting::where('name', 'committee-roles')->first()->value;
     return collect($roles)->reduce(fn($allRoles, $role) => [...$allRoles, $role => $role], []);
+  }
+
+  public static function sendNotification(string $title, ?string $body, ?string $status = 'success') : Notification
+  {
+    return Notification::make()
+      ->title($title)
+      ->body($body)
+      ->color($status)
+      ->$status();
   }
 }
