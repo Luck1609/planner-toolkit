@@ -177,6 +177,27 @@ return [
       ],
       ''
     ]
+  ],
+  [
+    'name' => 'application-status',
+    'value' => [
+      [
+        'name' => 'Approve',
+        'sort_order' => 1
+      ],
+      [
+        'name' => 'Recommend',
+        'sort_order' => 2
+      ],
+      [
+        'name' => 'Defer',
+        'sort_order' => 3
+      ],
+      [
+        'name' => 'Reject',
+        'sort_order' => 4
+      ],
+    ]
   ]
   // [
   //   'name' => 'google_storage',

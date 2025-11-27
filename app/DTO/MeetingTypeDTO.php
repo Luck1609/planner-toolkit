@@ -24,6 +24,8 @@ class MeetingTypeDTO
         []
       );
 
+      logger('', ['meeting-data' => $meetingData]);
+
     return new static(
       tsc: Arr::get($meetingData, 'tsc', null),
       spc: Arr::get($meetingData, 'spc', null),

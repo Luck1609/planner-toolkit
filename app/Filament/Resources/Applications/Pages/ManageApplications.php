@@ -2,14 +2,17 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
+use App\ActiveSessionTrait;
 use App\DTO\ActiveSessionDTO;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Models\Application;
 use App\Models\MonthlySession;
 use App\Models\Office;
 use App\Models\Sector;
+use App\Services\ApplicationService;
 use App\Services\FormService;
 use App\Services\HelperService;
+use App\SessionService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -19,25 +22,26 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Components\Group;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ManageApplications extends ManageRecords
 {
+  use ActiveSessionTrait;
+
   protected static string $resource = ApplicationResource::class;
 
   protected function getHeaderActions(): array
   {
-    $sessionDto = (new ActiveSessionDTO())();
+    if (!$this->sessionExists())
+      return $this->sessionAction();
 
-    return [
-      ...!$sessionDto->exists
-        ? $this->getCreateSessionAction()
-        : $this->getCreateApplicationAction()
-    ];
+    return $this->createAction();
   }
 
 
@@ -58,10 +62,11 @@ class ManageApplications extends ManageRecords
   }
 
 
-  protected function getCreateSessionAction(): array
+  protected function sessionAction(): array
   {
     return [
       Action::make('New session')
+        ->icon('icon-calendar-plus')
         ->schema([
           Group::make([
             TextInput::make('title')->required()->columnSpanFull(),
@@ -72,15 +77,13 @@ class ManageApplications extends ManageRecords
         ])
         ->modalWidth(Width::ExtraLarge)
         ->action(function (array $data) {
-          $currentSession = MonthlySession::create([
+          MonthlySession::create([
             ...$data,
             'is_current' => true,
             'finalized' => false
           ]);
 
-          $this->dispatch('refresh');
-
-          return $currentSession;
+          return redirect('/applications');
         })
         ->successNotification(
           Notification::make()
@@ -91,68 +94,53 @@ class ManageApplications extends ManageRecords
     ];
   }
 
-  protected function getCreateApplicationAction(): array
+  public function createAction(): array
   {
     return [
-      CreateAction::make()
-        ->steps(FormService::applicationForm())
-        ->mutateDataUsing(function (array $data) {
-          return [
+      Action::make('create')
+        ->label('New application')
+        ->icon(Heroicon::OutlinedPlus)
+        ->steps(ApplicationService::form())
+
+        ->mutateDataUsing(fn (array $data) => [
             ...$data,
             'user_id' => Auth::user()->id,
-            ...$this->generateApplicationNumber($data)
-          ];
+            ...ApplicationService::generateApplicationNumber($data)
+          ])
+        ->action(function (array $data): Model {
+          $coordinates = Arr::pull($data, 'coordinates');
+
+          data_set(
+            $data,
+            'height',
+            $data['type'] === 'single' ? 1 : $data['height']
+          );
+
+          logger('create-application', ['data' => $data]);
+
+          $application = Application::create($data);
+
+          $firstLongitude = data_get($coordinates, '0.longitude');
+          $firstLatitude = data_get($coordinates, '0.latitude');
+
+          if ($firstLongitude && $firstLatitude)
+            $application->coordinates()->createMany($coordinates);
+
+          return $application;
         })
-        ->using(fn(array $data, string $model): Model => $model::create($data))
         ->successNotification(
           Notification::make()
             ->success()
             ->title('Application Created')
             ->body('The application has been successfully created')
-        )
-    ];
-  }
-
-  protected function generatePermitNumbers(): array
-  {
-    $session = MonthlySession::with('applications')->where('status', true)->first();
-    $count = 0;
-
-    $initials = Office::first()->initials;
-
-    // foreach ($session->applications as $application) {
-    //   $count++;
-    //   $permit_num = $initials . '/DEV/PER/' . ($count < 10 ? '0' . $count : $count) . '/0' . str_split($event->quarter->quarter_name)[0] . '/' . Carbon::parse($app->created_at)->isoFormat('YY');
-    //   $dev_permit_num = $initials . '/BP/' . ($count < 10 ? '0' . $count : $count) . '/0' . str_split($event->quarter->quarter_name)[0] . '/' . Carbon::parse($app->created_at)->isoFormat('YY');
-
-    //   $application->update([
-    //     'pemit_num' => $permit_num,
-    //     'dev_pemit_num' => $dev_permit_num,
-    //   ]);
-    // }
-
-    return [];
-  }
-
-  protected function generateApplicationNumber(array $data): array
-  {
-    $date = Carbon::parse(now());
-
-    $officeInitials = Office::first()->initials;
-    $sector = Sector::with('locality')->find($data['sector_id']);
-    $localityInitials = $sector->locality->initials;
-    $sectorInitials = $sector->initials;
-    $session = MonthlySession::whereYear('created_at', $date->year)->count();
-    $sessionCount = $session > 9 ? $session : "0{$session}";
-
-    $year = Str::substr($date->year, 2, 2);
-
-    $applicationNumber =  $data['application_number'] ?? "{$officeInitials}/{$sectorInitials}/{$localityInitials}/{$sessionCount}/{$year}";
-
-    return [
-      'application_num' => $applicationNumber,
-      'session_num' => $sessionCount,
-      'monthly_session_id' => MonthlySession::where('is_current', true)->first()->id,
+        ),
+      SessionService::sessionEndButton($this->session),
+      ...$this->sessionIsFinalized()
+        ? [
+          Action::make('Download records')
+            ->icon(Heroicon::OutlinedArrowDownTray),
+        ]
+        : []
     ];
   }
 }

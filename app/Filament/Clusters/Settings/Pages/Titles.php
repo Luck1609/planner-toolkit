@@ -20,6 +20,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 class Titles extends Page implements HasTable, HasActions
 {
@@ -29,7 +30,12 @@ class Titles extends Page implements HasTable, HasActions
 
   protected static ?string $cluster = SettingsCluster::class;
 
+  protected static string | UnitEnum | null $navigationGroup = 'Others';
+
   protected static string|BackedEnum|null $navigationIcon = 'icon-rosette-discount-check';
+
+
+  protected static ?int $navigationSort = 1;
 
   protected function getHeaderActions(): array
   {
