@@ -30,10 +30,15 @@ class HelperService
     return collect($roles)->reduce(fn($allRoles, $role) => [...$allRoles, $role => $role], []);
   }
 
-  public static function sendNotification(string $title, ?string $body, ?string $status = 'success') : Notification
+  public static function sendNotification(string $body, ?string $title = null, ?string $status = 'success') : Notification
   {
     return Notification::make()
-      ->title($title)
+      ->title($title ?: match ($status) {
+        'warning' => 'Attention',
+        'warning' => 'Notice',
+        'danger' => 'Action Failed',
+        default => 'Action Successful',
+      })
       ->body($body)
       ->color($status)
       ->$status();

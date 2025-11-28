@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\Applications;
 
 use App\ActiveSessionTrait;
+use App\Enums\SettingNameEnum;
 use App\Filament\Resources\Applications\Pages\ManageApplications;
 use App\Models\Application;
 use App\Models\MonthlySession;
 use App\Models\Setting;
+use App\Services\ApplicationService;
 use App\Services\FormService;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -80,32 +82,14 @@ class ApplicationResource extends Resource
       ->toolbarActions(
         !(new self())->sessionMeeting()->tsc
           ? collect(
-            Setting::where('name', 'application-status')
+            Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
               ->first()
               ->value ?: []
           )->map(
-            function ($status) {
-              $color = data_get($status, 'color', 'info');
-              return BulkAction::make($status['name'])
-                ->button()
-                ->outlined()
-                ->color($color)
-                ->icon(Heroicon::OutlinedCheckBadge)
-                ->extraAttributes([
-                  'class' => "text-{$color}-600 dark:text-{$color}-500",
-                ])
-                ->action(function (Collection $records) use ($status) {
-                  logger('', [ 'status' => $status, 'records' => $records]);
-                  $records->each(
-                    fn ($application) => $application
-                      ->sessions()
-                      ->attach($application->id, [
-                        'status' => $status['state'],
-                        'monthly_session_id' => (new self())->session->id
-                      ])
-                  );
-                });
-            }
+            fn($status) => ApplicationService::showConfirmation(
+              session: (new self())->session,
+              status: $status,
+            )
           )
           ->all()
           : []

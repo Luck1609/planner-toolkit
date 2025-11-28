@@ -77,7 +77,7 @@ return [
     ],
   ],
   [
-    "name" => "sms_templates",
+    "name" => "sms-templates",
     "value" => [
       'received' => [
         'message' => 'Hello [APPLICANT_TITLE]  [APPLICANT_LASTNAME] \nThis message is to acknowledge the receipt of your permit application submitted to [OFFICE_NAME] \n\nFor any enquiries, please call [OFFICE_PHONE]',
@@ -153,7 +153,7 @@ return [
   [
     'name' => 'notifications',
     'value' => [
-      'application_status' => [
+      'application-status' => [
         'received' => [
           'sms' => true,
           'email' => false
@@ -185,35 +185,30 @@ return [
         'name' => 'Approve',
         'sort_order' => 1,
         'state' => 'approved',
-        'color' => 'primary'
+        'color' => 'primary',
+        "requires_comment" => false
       ],
       [
         'name' => 'Recommend',
         'sort_order' => 2,
         'state' => 'recommended',
-        'color' => 'success'
+        'color' => 'success',
+        "requires_comment" => false
       ],
       [
         'name' => 'Defer',
         'sort_order' => 3,
         'state' => 'deferred',
-        'color' => 'warning'
+        'color' => 'warning',
+        "requires_comment" => true
       ],
       [
         'name' => 'Reject',
         'sort_order' => 4,
         'state' => 'rejected',
-        'color' => 'danger'
+        'color' => 'danger',
+        "requires_comment" => true
       ],
     ]
   ]
-  // [
-  //   'name' => 'google_storage',
-  //   'value' => [
-  //     'access_token' => '',
-  //     'refresh_token' => '',
-  //     'token_expires_at' => '',
-  //     'email' => ''
-  //   ]
-  // ],
 ];

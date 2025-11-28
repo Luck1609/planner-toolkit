@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Settings\Pages;
 
+use App\Enums\SettingNameEnum;
 use App\Filament\Clusters\Settings\SettingsCluster;
 use App\Filament\Tables\Columns\ColorDisplayColumn;
 use App\Filament\Tables\Columns\DisplayColumn;
@@ -22,6 +23,7 @@ use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -50,7 +52,7 @@ class ApplicationStatus extends Page implements HasTable, HasActions
         ->icon(Heroicon::OutlinedPlus)
         ->modal()
         ->mountUsing(function (Schema $form) {
-          $applicationStatus = Setting::where('name', 'application-status')->first()?->value ?: [];
+          $applicationStatus = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first()?->value ?: [];
 
           $form->fill([
             'name' => '',
@@ -59,7 +61,7 @@ class ApplicationStatus extends Page implements HasTable, HasActions
         })
         ->schema(SettingsService::applicationStatusForm())
         ->action(function (array $data) {
-          $applicationStatus = Setting::where('name', 'application-status')->first();
+          $applicationStatus = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first();
 
           $sortOrder = $applicationStatus?->value ? count($applicationStatus->value) + 1 : 1;
           $applicationStatus->update(['value' => [
@@ -87,14 +89,33 @@ class ApplicationStatus extends Page implements HasTable, HasActions
     return $table
       ->columns([
         TextColumn::make('name')->searchable(),
-        TextColumn::make('sort_order'),
-        TextColumn::make('state')
-          ->formatStateUsing(function ($state, array $record) {logger('', ['state' => $state, 'record' => $record]); return $state;}),
-          // ->state(fn ),
-        ColorDisplayColumn::make('color')
+        TextColumn::make('state'),
+        ColorDisplayColumn::make('color'),
+        ToggleColumn::make('requires_comment')
+          ->updateStateUsing(function ($state, array $record) {
+            $settings = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first();
+            $update = collect($settings->value)
+              ->reduce(
+                fn($values, $field) => [
+                  ...$values,
+                  $record['name'] === $field['name']
+                    ? [...$field, 'requires_comment' => $state]
+                    : $field
+                ],
+                []
+              );
+
+            $settings->update(['value' => $update]);
+            HelperService::sendNotification(body: 'Status comment requirement successfully updated')
+              ->send();
+            redirect($this->redirectUrl);
+          })
+          ->alignCenter(),
+        TextColumn::make('sort_order')
+          ->alignCenter(),
       ])
       ->records(function () {
-        $settings = Setting::where('name', 'application-status')->first();
+        $settings = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first();
         return $settings->value;
       })
       ->recordActions([
@@ -110,7 +131,7 @@ class ApplicationStatus extends Page implements HasTable, HasActions
             ...SettingsService::applicationStatusForm()
           ])
           ->action(function (array $data) {
-            $applicationStatus = Setting::where('name', 'application-status')->first();
+            $applicationStatus = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first();
 
             $id = Arr::pull($data, 'current_name');
 
@@ -138,7 +159,7 @@ class ApplicationStatus extends Page implements HasTable, HasActions
           ->color(Color::Red)
           ->requiresConfirmation()
           ->action(function ($record) {
-            $settings = Setting::where('name', 'application-status')->first();
+            $settings = Setting::where('name', SettingNameEnum::APPLICATION_STATUS)->first();
 
             // Remove the record from the JSON list
             $settings->value = collect($settings->value)

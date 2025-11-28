@@ -12,18 +12,27 @@ use App\Models\Office;
 use App\Models\Sector;
 use App\Models\Setting;
 use Carbon\Carbon;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
 class ApplicationService
@@ -115,7 +124,7 @@ class ApplicationService
             Radio::make('existing')
               ->options([1 => 'Existing', 0 => 'New'])
               ->label('Property development state'),
-              // ->columns(3),
+            // ->columns(3),
 
             TextInput::make('height')
               ->integer()
@@ -225,5 +234,85 @@ class ApplicationService
         ? [...$duplicates, $application]
         : $duplicates;
     }, []);
+  }
+
+  public static function showConfirmation(array $status, MonthlySession $session): Action
+  {
+    $action = self::getBulkActionButton(status: $status, session: $session);
+
+    return data_get($status, 'requires_comment', false)
+      ? $action
+      ->modal()
+      ->mountUsing(
+        fn(Schema $form, Collection $records) => $form->fill(
+          $records->map(fn($record, $key) => [
+            "applications.$key.application_id" => $record->id,
+            "applications.$key.comments" => '',
+            "applications.$key.monthly_session_id" => $session->id,
+          ])->toArray()
+        )
+      )
+      ->steps(function (Collection $records) {
+        $chunk = $records->chunk(2)->all();
+
+        logger('', ['mount-records' => $chunk]);
+        return collect($chunk)->map(fn($batch, $batchKey) => Step::make(Number::ordinal($batchKey + 1) . ' Batch of Applications')
+          ->schema(
+            $batch->reduce(function ($allRecords, $record, $key) {
+              logger('', ['reduced-record' => $allRecords, 'record' => $record]);
+              return [
+                ...$allRecords,
+                Section::make('Comments received for ' . $record['title'] . ' ' . $record['firstname'] . ' ' . $record['lastname'])
+                  ->description('Type in the comments received for this application')
+                  ->schema([
+                    RichEditor::make("applications.$key.comments")
+                      ->label('Reason for the action ')
+                      ->required(),
+                    Hidden::make("applications.$key.application_id"),
+                    Hidden::make("applications.$key.monthly_session_id"),
+                  ])
+              ];
+            }, [])
+          ))->toArray();  
+      })
+      ->action(function (Collection $records) {
+        logger('', ['bulk-action' => $records]);
+      })
+      : $action
+      ->requiresConfirmation()
+      ->modalHeading(fn(Collection $records) => $status['name'] . ($records->count() > 1 ? ' Applications' : ' Application'))
+      ->modalDescription(
+        fn(Collection $records) => $records->count() . ' ' . (
+          $records->count() > 1
+          ? 'applications'
+          : 'application'
+        )
+          . ' has been selected to be ' . $status['state'] . ', do you wish to continue with this action?'
+      );
+  }
+
+  private static function getBulkActionButton(array $status, MonthlySession $session): Action
+  {
+    $color = $status['color'];
+
+    return BulkAction::make($status['name'])
+      ->button()
+      ->outlined()
+      ->color($color)
+      ->icon(Heroicon::OutlinedCheckBadge)
+      ->extraAttributes([
+        'class' => "text-{$color}-600 dark:text-{$color}-500",
+      ])
+      ->action(function (Collection $records) use ($status, $session) {
+        logger('', ['status' => $status, 'records' => $records]);
+        $records->each(
+          fn($application) => $application
+            ->sessions()
+            ->attach($application->id, [
+              'status' => $status['state'],
+              'monthly_session_id' => $session->id
+            ])
+        );
+      });
   }
 }
