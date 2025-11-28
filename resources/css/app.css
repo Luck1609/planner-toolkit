@@ -1,10 +1,8 @@
 @import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
+@import '../../vendor/filament/filament/resources/css/theme.css';
 
-@source '../views';
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
-@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -64,10 +62,6 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
-
-.fi-color-primary {
-  @apply text-white!
-}
 
 .info-text {
   @apply p-2 h-44!;

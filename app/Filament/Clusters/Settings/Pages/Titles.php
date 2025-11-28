@@ -85,7 +85,6 @@ class Titles extends Page implements HasTable, HasActions
               ->placeholder('Title name (Mr. Dr. Esq...)')
           ])
           ->action(function (array $data) {
-            logger('edit-data', $data);
             $titles = Setting::where('name', 'titles')->first();
 
             $value = collect($titles->value)->reduce(fn($values, $value) => [

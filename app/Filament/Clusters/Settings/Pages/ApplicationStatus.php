@@ -3,6 +3,8 @@
 namespace App\Filament\Clusters\Settings\Pages;
 
 use App\Filament\Clusters\Settings\SettingsCluster;
+use App\Filament\Tables\Columns\ColorDisplayColumn;
+use App\Filament\Tables\Columns\DisplayColumn;
 use Filament\Pages\Page;
 use App\Models\Setting;
 use App\Services\HelperService;
@@ -18,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -58,8 +61,6 @@ class ApplicationStatus extends Page implements HasTable, HasActions
         ->action(function (array $data) {
           $applicationStatus = Setting::where('name', 'application-status')->first();
 
-          logger('', ['create-status' => $data]);
-
           $sortOrder = $applicationStatus?->value ? count($applicationStatus->value) + 1 : 1;
           $applicationStatus->update(['value' => [
             ...$applicationStatus->value ?: [],
@@ -77,7 +78,7 @@ class ApplicationStatus extends Page implements HasTable, HasActions
 
           return redirect($this->redirectUrl);
         })
-        ->modalWidth(Width::Large)
+        ->modalWidth(Width::ExtraLarge)
     ];
   }
 
@@ -86,7 +87,11 @@ class ApplicationStatus extends Page implements HasTable, HasActions
     return $table
       ->columns([
         TextColumn::make('name')->searchable(),
-        TextColumn::make('sort_order')
+        TextColumn::make('sort_order'),
+        TextColumn::make('state')
+          ->formatStateUsing(function ($state, array $record) {logger('', ['state' => $state, 'record' => $record]); return $state;}),
+          // ->state(fn ),
+        ColorDisplayColumn::make('color')
       ])
       ->records(function () {
         $settings = Setting::where('name', 'application-status')->first();

@@ -45,23 +45,6 @@ class ManageApplications extends ManageRecords
   }
 
 
-
-  private function checkDuplicates(array $data): array
-  {
-    $matches = Application::where('locality_id', $data['locality_id'])
-      ->where('sector_id', $data['sector_id'])
-      ->where('block', $data['block'])->get();
-
-    return $matches->reduce(function ($duplicates, $application) use ($data) {
-      $found = Str::position($application->plot_number, $data['plot_number']);
-
-      return gettype($found) === 'integer'
-        ? [...$duplicates, $application]
-        : $duplicates;
-    }, []);
-  }
-
-
   protected function sessionAction(): array
   {
     return [
@@ -115,8 +98,6 @@ class ManageApplications extends ManageRecords
             'height',
             $data['type'] === 'single' ? 1 : $data['height']
           );
-
-          logger('create-application', ['data' => $data]);
 
           $application = Application::create($data);
 

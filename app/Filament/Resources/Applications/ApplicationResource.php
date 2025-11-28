@@ -6,6 +6,7 @@ use App\ActiveSessionTrait;
 use App\Filament\Resources\Applications\Pages\ManageApplications;
 use App\Models\Application;
 use App\Models\MonthlySession;
+use App\Models\Setting;
 use App\Services\FormService;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -24,6 +25,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class ApplicationResource extends Resource
@@ -77,24 +79,38 @@ class ApplicationResource extends Resource
       ])
       ->toolbarActions(
         !(new self())->sessionMeeting()->tsc
-          ? [
-            BulkAction::make('Recommend')
-              ->outlined()
-              ->icon(Heroicon::OutlinedCheckBadge),
-            BulkAction::make('Defer')
-              ->outlined()
-              ->color(Color::Amber)
-              ->icon(Heroicon::OutlinedXCircle),
-            BulkAction::make('Reject')
-              ->outlined()
-              ->color(Color::Red)
-              ->icon(Heroicon::OutlinedNoSymbol)
-          ]
+          ? collect(
+            Setting::where('name', 'application-status')
+              ->first()
+              ->value ?: []
+          )->map(
+            function ($status) {
+              $color = data_get($status, 'color', 'info');
+              return BulkAction::make($status['name'])
+                ->button()
+                ->outlined()
+                ->color($color)
+                ->icon(Heroicon::OutlinedCheckBadge)
+                ->extraAttributes([
+                  'class' => "text-{$color}-600 dark:text-{$color}-500",
+                ])
+                ->action(function (Collection $records) use ($status) {
+                  logger('', [ 'status' => $status, 'records' => $records]);
+                  $records->each(
+                    fn ($application) => $application
+                      ->sessions()
+                      ->attach($application->id, [
+                        'status' => $status['state'],
+                        'monthly_session_id' => (new self())->session->id
+                      ])
+                  );
+                });
+            }
+          )
+          ->all()
           : []
       )
-      ->headerActions([
-
-      ]);
+      ->headerActions([]);
   }
 
   public static function getPages(): array

@@ -24,7 +24,7 @@ class MonthlySession extends Model
 
   public function applications(): BelongsToMany
   {
-    return $this->belongsToMany(Application::class)->withPivot('status_id');
+    return $this->belongsToMany(Application::class)->withPivot('status');
   }
 
   public function meetings(): HasMany

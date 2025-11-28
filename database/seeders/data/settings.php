@@ -183,19 +183,27 @@ return [
     'value' => [
       [
         'name' => 'Approve',
-        'sort_order' => 1
+        'sort_order' => 1,
+        'state' => 'approved',
+        'color' => 'primary'
       ],
       [
         'name' => 'Recommend',
-        'sort_order' => 2
+        'sort_order' => 2,
+        'state' => 'recommended',
+        'color' => 'success'
       ],
       [
         'name' => 'Defer',
-        'sort_order' => 3
+        'sort_order' => 3,
+        'state' => 'deferred',
+        'color' => 'warning'
       ],
       [
         'name' => 'Reject',
-        'sort_order' => 4
+        'sort_order' => 4,
+        'state' => 'rejected',
+        'color' => 'danger'
       ],
     ]
   ]

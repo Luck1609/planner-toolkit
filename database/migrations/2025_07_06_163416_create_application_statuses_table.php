@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('application_statuses', function (Blueprint $table) {
       $table->foreignUuid('application_id')->constrained()->onDelete('CASCADE');
-      $table->foreignUuid('status_id')->nullable()->constrained()->nullOnDelete();
+      $table->foreignUuid('status');
       $table->foreignUuid('monthly_session_id')->constrained()->nullOnDelete();
       $table->text('comments')->nullable();
       $table->timestamps();

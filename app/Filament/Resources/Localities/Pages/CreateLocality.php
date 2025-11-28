@@ -12,8 +12,6 @@ class CreateLocality extends CreateRecord
 
   protected function mutateFormDataBeforeCreate(array $data): array
   {
-    logger('Locality data', $data);
-
     return $data;
   }
 }

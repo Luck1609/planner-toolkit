@@ -144,8 +144,6 @@ class Staff extends Page implements HasTable, HasActions
         ],
       ]
     ]);
-
-    logger('', ['response' => $response->json()]);
   }
 
   private function getUserForm(): array

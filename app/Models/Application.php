@@ -32,13 +32,8 @@ class Application extends Model implements HasMedia
     return $this->belongsTo(Sector::class);
   }
 
-  public function session(): BelongsToMany {
-    return $this->belongsToMany(MonthlySession::class)->withPivot('status_id')->withTimestamps();
-  }
-
-  public function statuses(): BelongsToMany
-  {
-    return $this->belongsToMany(Status::class)->withPivot('monthly_session_id')->withTimestamps();
+  public function sessions(): BelongsToMany {
+    return $this->belongsToMany(MonthlySession::class, 'application_statuses', 'application_id', 'monthly_session_id')->withPivot('status')->withTimestamps();
   }
 
   public function coordinates(): HasMany {

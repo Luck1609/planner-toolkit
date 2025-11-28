@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\MonthlySession;
 use App\Models\Setting;
 use Filament\Notifications\Notification;
 

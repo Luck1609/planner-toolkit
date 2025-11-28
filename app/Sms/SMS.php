@@ -33,8 +33,6 @@ class SMS
           $payload['balance'],
         ];
 
-        // logger('', ['payload' => $values, 'phone' => $phone]);
-
         $sms->addPersonalisedDestination($phone, false, $values);
       }
 

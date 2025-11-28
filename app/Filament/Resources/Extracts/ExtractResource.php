@@ -82,7 +82,7 @@ class ExtractResource extends Resource
           Select::make('block')
             ->options(function (Get $get): array {
               $sector = Sector::find($get('sector_id'));
-              logger('selected blocks', ['blocks' => $sector]);
+              
               return $sector->blocks ?? [];
             })
             ->required()

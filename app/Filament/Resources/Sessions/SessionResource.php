@@ -84,13 +84,10 @@ class SessionResource extends Resource
           ->searchable(),
         TextColumn::make('is_current')
           ->label('Status')
-          ->formatStateUsing(function ($state) {
-            logger('', ['is_current' => $state, 'type' => gettype($state)]);
-            return match ($state) {
+          ->formatStateUsing(fn ($state) => match ($state) {
               1 => 'Ongoing',
               0 => 'Completed',
-            };
-          })
+            })
           ->badge()
           ->formatStateUsing(fn ($state) => match ($state) {
             1 => 'Ongoing',

@@ -88,7 +88,6 @@ class MemberRole extends Page implements HasTable, HasActions
               ->placeholder('Title name (Mr. Dr. Esq...)')
           ])
           ->action(function (array $data) {
-            logger('edit-data', $data);
             $roles = Setting::where('name', 'committee-roles')->first();
 
             $value = collect($roles->value)->reduce(fn($values, $value) => [
