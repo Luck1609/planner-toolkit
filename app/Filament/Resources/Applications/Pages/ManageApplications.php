@@ -3,32 +3,23 @@
 namespace App\Filament\Resources\Applications\Pages;
 
 use App\ActiveSessionTrait;
-use App\DTO\ActiveSessionDTO;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Models\Application;
 use App\Models\MonthlySession;
-use App\Models\Office;
-use App\Models\Sector;
 use App\Services\ApplicationService;
-use App\Services\FormService;
-use App\Services\HelperService;
 use App\SessionService;
-use Carbon\Carbon;
 use Filament\Actions\Action;
-use Filament\Actions\CreateAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Components\Group;
+use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class ManageApplications extends ManageRecords
 {
@@ -80,45 +71,51 @@ class ManageApplications extends ManageRecords
   public function createAction(): array
   {
     return [
-      Action::make('create')
-        ->label('New application')
-        ->icon(Heroicon::OutlinedPlus)
-        ->steps(ApplicationService::form())
 
-        ->mutateDataUsing(fn (array $data) => [
-            ...$data,
-            'user_id' => Auth::user()->id,
-            ...ApplicationService::generateApplicationNumber($data)
-          ])
-        ->action(function (array $data): Model {
-          $coordinates = Arr::pull($data, 'coordinates');
+      ...!$this->sessionIsFinalized()
+        ? [
+          Action::make('create')
+            ->label('New application')
+            ->icon(Heroicon::OutlinedPlus)
+            ->steps(ApplicationService::form())
 
-          data_set(
-            $data,
-            'height',
-            $data['type'] === 'single' ? 1 : $data['height']
-          );
+            ->mutateDataUsing(fn(array $data) => [
+              ...$data,
+              'user_id' => Auth::user()->id,
+              ...ApplicationService::generateApplicationNumber($data)
+            ])
+            ->action(function (array $data): Model {
+              $coordinates = Arr::pull($data, 'coordinates');
 
-          $application = Application::create($data);
+              data_set(
+                $data,
+                'height',
+                $data['type'] === 'single' ? 1 : $data['height']
+              );
 
-          $firstLongitude = data_get($coordinates, '0.longitude');
-          $firstLatitude = data_get($coordinates, '0.latitude');
+              $application = Application::create($data);
 
-          if ($firstLongitude && $firstLatitude)
-            $application->coordinates()->createMany($coordinates);
+              $firstLongitude = data_get($coordinates, '0.longitude');
+              $firstLatitude = data_get($coordinates, '0.latitude');
 
-          return $application;
-        })
-        ->successNotification(
-          Notification::make()
-            ->success()
-            ->title('Application Created')
-            ->body('The application has been successfully created')
-        ),
+              if ($firstLongitude && $firstLatitude)
+                $application->coordinates()->createMany($coordinates);
+
+              return $application;
+            })
+            ->successNotification(
+              Notification::make()
+                ->success()
+                ->title('Application Created')
+                ->body('The application has been successfully created')
+            )
+        ]
+        : [],
       SessionService::sessionEndButton($this->session),
       ...$this->sessionIsFinalized()
         ? [
           Action::make('Download records')
+            ->color(Color::Blue)
             ->icon(Heroicon::OutlinedArrowDownTray),
         ]
         : []

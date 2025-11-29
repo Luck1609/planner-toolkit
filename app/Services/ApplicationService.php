@@ -24,6 +24,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
@@ -228,67 +229,67 @@ class ApplicationService
     }, []);
   }
 
-  public static function showConfirmation(array $status, MonthlySession $session): Action
+  public static function showConfirmation(array $status, MonthlySession $session, ?bool $isBulkAction = true): Action
   {
     $action = self::getBulkActionButton(
       status: $status,
       session: $session,
     );
 
-    return data_get($status, 'requires_comment', false)
-      ? $action
-      ->modal()
-      ->steps(
-        fn(Collection $records) => ($records->chunk(2))->map(
-          fn($batch, $batchIndex) => Step::make(Number::ordinal($batchIndex + 1) . ' Batch of Applications')
-            ->schema(
-              $batch->map(
-                fn($record) => Section::make("Comments for {$record->title} {$record->firstname} {$record->lastname}")
-                  ->description('Type in the comments received for this application')
-                  ->schema([
-                    RichEditor::make("applications.{$record->id}.comments")
-                      ->label('Reason for the action')
-                      ->required(),
-                  ])
-              )->toArray()
+    if (data_get($status, 'requires_comment', false))
+      return $isBulkAction
+        ? $action
+        ->modal()
+        ->steps(
+          fn(Collection $records) => (new self())
+            ->commentsForm(
+              isBulkAction: $isBulkAction,
+              records: $records
             )
-        )->toArray()
-      )
-      ->action(
-        fn(array $data, Action $action) => collect(data_get($data, 'applications'))->each(
-          function ($field, $key) use ($session, $status, $action) {
-            try {
-            $application = Application::find($key);
-
-            logger('', ['key' => $key, 'comments' => data_get($field, 'comments')]);
-
-            $application
-              ->sessions()
-              ->attach($application->id, [
-                'status' => $status['state'],
-                'monthly_session_id' => $session->id,
-                'comments' => data_get($field, 'comments'),
-              ]);
-            } catch (\Throwable $th) {
-              $action->reportBulkProcessingFailure(
-                'status_update_failed',
-                message: $th->getMessage()
-              );
+        )
+        ->action(
+          fn(array $data, Action $action) => collect(data_get($data, 'applications'))->each(
+            function ($field, $key) use ($session, $status, $action) {
+              try {
+                (new self())->processStatus(
+                  id: $key,
+                  status: $status['state'],
+                  sessionId: $session->id,
+                  field: $field
+                );
+              } catch (\Throwable $th) {
+                $action->reportBulkProcessingFailure(
+                  'status_update_failed',
+                  message: $th->getMessage()
+                );
+              }
             }
-          }
+          )
         )
-      )
-      : $action
-      ->requiresConfirmation()
-      ->modalHeading(fn(Collection $records) => $status['name'] . ($records->count() > 1 ? ' Applications' : ' Application'))
-      ->modalDescription(
-        fn(Collection $records) => $records->count() . ' ' . (
-          $records->count() > 1
-          ? 'applications'
-          : 'application'
+        : $action
+        ->schema(
+          fn(Model $record) => (new self())->commentsEditor($record)
         )
-          . ' has been selected to be ' . $status['state'] . ', do you wish to continue with this action?'
-      );
+        ->action(fn($data, Model $record) => (new self())->processStatus(
+          id: $record->id,
+          status: $status['state'],
+          sessionId: $session->id,
+          field: $data
+        ));
+    else
+      return $action
+        ->requiresConfirmation()
+        ->modalHeading(fn($records) => $status['name'] . (($records?->count() ?: 1) > 1 ? ' Applications' : ' Application'))
+        ->modalDescription(
+          fn(Collection $records, Model $record) => $isBulkAction
+            ? ($records->count() . ' ' . (
+              $records->count() > 1
+              ? 'applications'
+              : 'application'
+            ))
+            : "Application for {$record->title} {$record->firstname} {$record->lastname}"
+            . ' has been selected to be ' . $status['state'] . ', do you wish to continue with this action?'
+        );
   }
 
   private static function getBulkActionButton(array $status, MonthlySession $session): Action
@@ -299,7 +300,6 @@ class ApplicationService
       ->button()
       ->outlined()
       ->color($color)
-      ->icon(Heroicon::OutlinedCheckBadge)
       ->extraAttributes([
         'class' => "text-{$color}-600 dark:text-{$color}-500",
       ])
@@ -315,10 +315,80 @@ class ApplicationService
         fn(Collection $records) => Notification::make()
           ->title('Application Status Updated')
           ->body("{$records->count()} applications have been successfully {$status['state']}")
+          ->color('danger')
+          ->danger()
+          ->send()
+      )
+      ->deselectRecordsAfterCompletion();
+  }
+
+  private static function getActionButton(array $status, MonthlySession $session): Action
+  {
+    $color = $status['color'];
+
+    return Action::make($status['name'])
+      ->button()
+      ->outlined()
+      ->color($color)
+      ->extraAttributes([
+        'class' => "text-{$color}-600 dark:text-{$color}-500",
+      ])
+      ->successNotification(
+        Notification::make()
+          ->title('Application Status Updated')
+          ->body("Applications have been successfully {$status['state']}")
           ->color('success')
           ->success()
           ->send()
       )
+      ->failureNotification(
+        Notification::make()
+          ->title('Application Status Updated')
+          ->body("Applications have been successfully {$status['state']}")
+          ->color('danger')
+          ->danger()
+          ->send()
+      )
       ->deselectRecordsAfterCompletion();
+  }
+
+  private function commentsForm(Collection | Application $records, bool $isBulkAction): array
+  {
+    return $isBulkAction
+      ? ($records->chunk(2))->map(
+        fn($batch, $batchIndex) => Step::make(Number::ordinal($batchIndex + 1) . ' Batch of Applications')
+          ->schema(
+            $batch->map(
+              fn($record) => Section::make("Comments for {$record->title} {$record->firstname} {$record->lastname}")
+                ->description('Type in the comments received for this application')
+                ->schema(
+                  $this->commentsEditor($records)
+                )
+            )->toArray()
+          )
+      )->toArray()
+      : $this->commentsEditor($records);
+  }
+
+  private function commentsEditor(Application $application): array
+  {
+    return [
+      RichEditor::make("applications.{$application->id}.comments")
+        ->label('Reason for the action')
+        ->required(),
+    ];
+  }
+
+  private function processStatus(string $id, string $status, string $sessionId, array $field)
+  {
+    $application = Application::find($id);
+
+    $application
+      ->sessions()
+      ->attach($application->id, [
+        'status' => $status,
+        'monthly_session_id' => $sessionId,
+        'comments' => data_get($field, 'comments'),
+      ]);
   }
 }

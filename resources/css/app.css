@@ -45,24 +45,30 @@
     }
 }
 
-[data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-2;
+.fi-main-sidebar {
+  @apply bg-white dark:bg-[#18181B];
 }
-
-[data-flux-label] {
-    @apply  !mb-0 !leading-tight;
-}
-
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
-}
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
 
 .info-text {
   @apply p-2 h-44!;
+}
+
+.fi-ac-btn-action {
+  @apply text-white;
+
+  svg {
+    @apply text-white;
+  }
+}
+
+.fi-ta-ctn, .fi-input-wrp {
+  @apply shadow-none;
+}
+
+.fi-sidebar-item {
+  &.fi-active {
+    & > .fi-sidebar-item-btn {
+      @apply bg-primary-50 dark:bg-primary-50/10
+    }
+  }
 }

@@ -112,7 +112,7 @@ class SessionResource extends Resource
       ->recordActions([
         ActionGroup::make([
           ViewAction::make(),
-          (new self())->sessionIsActive()
+          ...(new self())->sessionIsActive()
             ? [EditAction::make()]
             : [],
           Action::make('generate report')

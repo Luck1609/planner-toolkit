@@ -75,8 +75,25 @@ class ApplicationResource extends Resource
       ->recordActions([
         ActionGroup::make([
           ViewAction::make(),
-          EditAction::make(),
-          DeleteAction::make(),
+          EditAction::make()
+            ->visible(!(new self())->sessionIsFinalized()),
+          DeleteAction::make()
+            ->visible(!(new self())->sessionIsFinalized()),
+          ...!(new self())->sessionMeeting()->tsc
+            ? collect(
+              Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
+                ->first()
+                ->value ?: []
+            )->map(
+              fn($status) => ApplicationService::showConfirmation(
+                session: (new self())->session,
+                status: $status,
+                isBulkAction: false,
+              )
+                ->visible((new self())->sessionIsFinalized())
+            )
+            ->all()
+            : []
         ])
       ])
       ->toolbarActions(

@@ -22,7 +22,10 @@ trait ActiveSessionTrait
 
   protected function sessionIsFinalized() : bool
   {
-    return $this->session?->finalized ?: false;
+
+    $finalized = $this->session?->finalized ?: false;
+    logger('', ['session-finalized' => $finalized]);
+    return $finalized;
   }
 
   protected function sessionIsActive() : bool

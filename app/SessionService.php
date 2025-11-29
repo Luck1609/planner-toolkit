@@ -16,20 +16,29 @@ use Filament\Support\Icons\Heroicon;
 
 class SessionService
 {
-  public static function sessionEndButton(MonthlySession $session): Action
+  use ActiveSessionTrait;
+
+  public static function sessionEndButton(): Action
   {
-    return $session->finalized
+    return (new self())->sessionIsFinalized()
       // ? Action::make('End session')
-      ? (new self())->meetingButtons($session)
+      ? (new self())->meetingButtons()
       : Action::make('Finalize session')
       ->color(Color::Amber)
       ->icon(Heroicon::OutlinedLockClosed)
       ->extraAttributes(['class' => 'text-white!'])
       ->requiresConfirmation()
       ->modalHeading('Finalize Session')
-      ->modalDescription('Are you sure you\'d like to finalize this session? This action cannot be undone.')
+      ->modalDescription(
+        '
+          Once the session is finalized, you can\'t make any changes to the received application for this session.
+          This action cannot be undone. Do you wan to continue with the finalization?
+        '
+      )
+      // ->modalDescription('Are you sure you\'d like to finalize this session?')
       ->modalSubmitActionLabel('Yes, finalize it')
-      ->action(function () use ($session) {
+      ->action(function () {
+        $session = (new self())->session;
         $session->finalized = true;
         $session->save();
       })
@@ -41,20 +50,20 @@ class SessionService
       );
   }
 
-  private function meetingButtons(MonthlySession $activeSession) //: Action
+  private function meetingButtons() //: Action
   {
-    $session = $activeSession->session;
-    $meetings = MeetingTypeDTO::setMeeting($session->meetings);
+    $meetings = MeetingTypeDTO::setMeeting($this->session->meetings);
 
     if ($meetings->tsc === null || $meetings->spc === null)
       return Action::make($meetings->tsc === null ? 'tsc' : 'spc')
         ->modal()
         ->label('Schedule ' . ($meetings->tsc === null ? 'TSC' : 'SPC') . ' meeting')
+        ->color(Color::Orange)
         ->steps(MeetingService::meetingForm())
         ->skippableSteps()
         ->fillForm(MeetingService::formFiller(
           type: $meetings->tsc === null ? MeetingTypeEnum::TSC : MeetingTypeEnum::SPC,
-          defaults: ['monthly_session_id' => $activeSession->session->id]
+          defaults: ['monthly_session_id' => $this->session->id]
         ))
         ->action(fn(array $data) => MeetingService::saveRecord($data))
         ->icon('icon-calendar-time')
@@ -67,9 +76,9 @@ class SessionService
       ->modalHeading('End Session')
       ->modalDescription('Are you sure you\'d like to end this session? This action cannot be undone.')
       ->modalSubmitActionLabel('Yes, end it')
-      ->action(function () use ($session) {
-        $session->is_current = false;
-        $session->save();
+      ->action(function () {
+        $this->session->is_current = false;
+        $this->session->save();
       })
       ->successNotification(
         Notification::make()
