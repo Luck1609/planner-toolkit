@@ -94,6 +94,21 @@ class ApplicationResource extends Resource
           ->all()
           : []
       )
+      // ->toolbarActions(
+      //   !(new self())->sessionMeeting()->tsc
+      //     ? collect(
+      //       Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
+      //         ->first()
+      //         ->value ?: []
+      //     )->map(
+      //       fn($status) => ApplicationService::showConfirmation(
+      //         session: (new self())->session,
+      //         status: $status,
+      //       )
+      //     )
+      //     ->all()
+      //     : []
+      // )
       ->headerActions([]);
   }
 
