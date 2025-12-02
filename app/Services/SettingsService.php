@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\SettingNameEnum;
+use App\Models\Setting;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -53,5 +55,10 @@ class SettingsService
           ->numeric(),
       ])->columns(3)
     ];
+  }
+
+  public static function getSettings(SettingNameEnum $name): Setting
+  {
+    return Setting::where('name', $name->value)->first();
   }
 }

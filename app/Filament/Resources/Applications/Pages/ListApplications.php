@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\ActiveSessionTrait;
 use App\Enums\SettingNameEnum;
-use App\Filament\Resources\Applications\ApplicationResource;
 use App\Models\Application;
 use App\Models\MonthlySession;
 use App\Services\ApplicationService;
@@ -14,17 +14,17 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Tabs;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 
-class ManageApplications extends ManageRecords
+class ListApplications extends ListRecords
 {
   use ActiveSessionTrait;
 
@@ -125,15 +125,30 @@ class ManageApplications extends ManageRecords
     ];
   }
 
-  public function getTab(): array
+  public function getTabs(): array
   {
     $statusSettings = SettingsService::getSettings(SettingNameEnum::APPLICATION_STATUS);
 
-    $options = collect($statusSettings->value)->map(function($setting) {
-
+    $options = collect($statusSettings->value)->reduce(function ($allSettings, $setting) {
+      return [
+        ...$allSettings,
+        $setting['state'] => Tab::make()
+          ->modifyQueryUsing(
+            fn($query) => $query->whereHas(
+              'sessions', fn($sessionQuery) => $sessionQuery
+                ->where('monthly_session_id', $this->session->id)
+                ->where('status', $setting['state'])
+            )
+          )
+      ];
     }, []);
+
     return [
-      'Received' => Tabs::make(),
+      'received' => Tab::make()
+        ->modifyQueryUsing(
+          fn ($query) => $query->whereDoesntHave('sessions')
+        ),
+      ...$options
     ];
   }
 }

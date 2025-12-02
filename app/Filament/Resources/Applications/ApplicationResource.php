@@ -2,143 +2,55 @@
 
 namespace App\Filament\Resources\Applications;
 
-use App\ActiveSessionTrait;
-use App\Enums\SettingNameEnum;
-use App\Filament\Resources\Applications\Pages\ManageApplications;
+use App\Filament\Resources\Applications\Pages\CreateApplication;
+use App\Filament\Resources\Applications\Pages\EditApplication;
+use App\Filament\Resources\Applications\Pages\ListApplications;
+use App\Filament\Resources\Applications\Pages\ViewApplication;
+use App\Filament\Resources\Applications\Schemas\ApplicationForm;
+use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
-use App\Models\MonthlySession;
-use App\Models\Setting;
-use App\Services\ApplicationService;
-use App\Services\FormService;
 use BackedEnum;
-use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 
 class ApplicationResource extends Resource
 {
-  use ActiveSessionTrait;
+    protected static ?string $model = Application::class;
 
-  protected static ?string $model = Application::class;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-  protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // public static function form(Schema $schema): Schema
+    // {
+    //     return ApplicationForm::configure($schema);
+    // }
 
-  protected static ?string $recordTitleAttribute = 'Applications';
+    public static function infolist(Schema $schema): Schema
+    {
+        return ApplicationInfolist::configure($schema);
+    }
 
+    public static function table(Table $table): Table
+    {
+        return ApplicationsTable::configure($table);
+    }
 
-  public static function table(Table $table): Table
-  {
-    return $table
-      ->recordTitleAttribute('Applications')
-      ->columns([
-        TextColumn::make('name')->label('Full name')
-          ->default(fn(Model $member) => "{$member->title} {$member->firstname} {$member->lastname}")
-          ->searchable(),
-        TextColumn::make('contact')->label('Phone number')
-          ->searchable(),
-        TextColumn::make('currentState')
-          ->label('State')
-          ->default(fn(Model $application) => $application->existing ? 'Regularization' : 'New')
-          ->badge()
-          ->color(fn(string $state) => match ($state) {
-            'Regularization' => 'info',
-            'New' => 'success',
-          })
-          ->searchable(),
-        TextColumn::make('locality.name')->label('Locality')
-          ->searchable(),
-        TextColumn::make('sector.name')->label('Sector')
-          ->searchable(),
-        TextColumn::make('block')->searchable(),
-        TextColumn::make('plot_number')
-          ->searchable(),
-        TextColumn::make('shelf')->label('Shelf No.'),
-      ])
-      ->filters([
-      SelectFilter::make('type')
-        ->options([
-          'draft' => 'Draft',
-          'reviewing' => 'Reviewing',
-          'published' => 'Published',
-        ])
-      ])
-      ->recordActions([
-        ActionGroup::make([
-          ViewAction::make(),
-          EditAction::make()
-            ->visible(!(new self())->sessionIsFinalized()),
-          DeleteAction::make()
-            ->visible(!(new self())->sessionIsFinalized()),
-          ...!(new self())->sessionMeeting()->tsc
-            ? collect(
-              Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
-                ->first()
-                ->value ?: []
-            )->map(
-              fn($status) => ApplicationService::showConfirmation(
-                session: (new self())->session,
-                status: $status,
-                isBulkAction: false,
-              )
-                ->visible((new self())->sessionIsFinalized())
-            )
-            ->all()
-            : []
-        ])
-      ])
-      ->toolbarActions(
-        !(new self())->sessionMeeting()->tsc
-          ? collect(
-            Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
-              ->first()
-              ->value ?: []
-          )->map(
-            fn($status) => ApplicationService::showConfirmation(
-              session: (new self())->session,
-              status: $status,
-            )
-          )
-          ->all()
-          : []
-      )
-      // ->toolbarActions(
-      //   !(new self())->sessionMeeting()->tsc
-      //     ? collect(
-      //       Setting::where('name', SettingNameEnum::APPLICATION_STATUS)
-      //         ->first()
-      //         ->value ?: []
-      //     )->map(
-      //       fn($status) => ApplicationService::showConfirmation(
-      //         session: (new self())->session,
-      //         status: $status,
-      //       )
-      //     )
-      //     ->all()
-      //     : []
-      // )
-      ->headerActions([]);
-  }
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
 
-  public static function getPages(): array
-  {
-    return [
-      'index' => ManageApplications::route('/'),
-    ];
-  }
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListApplications::route('/'),
+            'create' => CreateApplication::route('/create'),
+            'view' => ViewApplication::route('/{record}'),
+            'edit' => EditApplication::route('/{record}/edit'),
+        ];
+    }
 }

@@ -362,7 +362,7 @@ class ApplicationService
               fn($record) => Section::make("Comments for {$record->title} {$record->firstname} {$record->lastname}")
                 ->description('Type in the comments received for this application')
                 ->schema(
-                  $this->commentsEditor($records)
+                  $this->commentsEditor($record)
                 )
             )->toArray()
           )
