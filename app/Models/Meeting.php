@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Meeting extends Model
@@ -29,9 +30,9 @@ class Meeting extends Model
     return $this->belongsTo(MonthlySession::class);
   }
 
-  public function minutes(): HasMany
+  public function minute(): HasOne
   {
-    return $this->hasMany(Minute::class);
+    return $this->hasOne(Minute::class);
   }
 
   public function participants(): HasMany

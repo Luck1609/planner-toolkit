@@ -14,13 +14,15 @@ class Minute extends Model
   protected $keyType = 'string';
   public $incrementing = false;
 
+  protected $guarded = [];
+
   protected $casts = [
-    'content' => AsJSON::class,
-    'participants' => AsJSON::class,
-    'attendees' => AsJSON::class,
-    'absentees' => AsJSON::class,
-    'recorded_by' => AsJSON::class,
-    'approved_by' => AsJSON::class,
+    'content' => 'array',
+    'participants' => 'array',
+    'attendees' => 'array',
+    'absentees' => 'array',
+    'recorded_by' => 'array',
+    'approved_by' => 'array',
   ];
 
 

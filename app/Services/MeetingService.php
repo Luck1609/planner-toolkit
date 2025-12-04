@@ -177,6 +177,8 @@ class MeetingService
 
     $meeting->participants()->createMany($participants);
 
+    $meeting->minute()->create([]);
+
     return $meeting;
   }
 }

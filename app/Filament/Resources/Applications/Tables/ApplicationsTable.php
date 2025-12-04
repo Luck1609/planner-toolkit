@@ -6,9 +6,11 @@ use App\ActiveSessionTrait;
 use App\Enums\SettingNameEnum;
 use App\Models\Setting;
 use App\Services\ApplicationService;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -48,6 +50,10 @@ class ApplicationsTable
         TextColumn::make('shelf')->label('Shelf No.'),
       ])
       ->filters([
+      ])
+      ->headerActions([
+        ExportAction::make(),
+        Action::make('export')
       ])
       ->recordActions([
         ActionGroup::make([

@@ -67,7 +67,11 @@ class SessionService
         ))
         ->action(fn(array $data) => MeetingService::saveRecord($data))
         ->icon('icon-calendar-time')
-        ->modalWidth(Width::TwoExtraLarge);
+        ->modalWidth(Width::TwoExtraLarge)
+        ->successNotification(
+          Notification::make()
+            ->title('')
+        );
 
     return Action::make('End session')
       ->icon('icon-calendar-check')
