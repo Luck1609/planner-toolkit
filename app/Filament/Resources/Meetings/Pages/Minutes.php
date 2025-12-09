@@ -25,46 +25,39 @@ class Minutes extends Page
 
   protected string $view = 'filament.resources.meetings.pages.minutes';
 
+  public ?array $formData = [];
+
   public function mount(int|string $record): void
   {
-    // logger('', ['minute-record' => $record]);
-    // $meeting = $this->resolveRecord($record);
-    $minute = Minute::find($record);
-    $this->record = $minute;
-    // logger('', ['mount-record' => $this->record]);
+    $this->record = $this->resolveRecord($record);
 
-    // $this->form->fill([
-    //   'title' => $minute->meeting->title ?: '',
-    //   'venue' => $minute->meeting->venue ?: '',
-    //   'date' => $minute->meeting->date ?: '',
-    //   'time' => $minute->meeting->time ?: '',
-    //   // 'participants' => $meeting->participants ?: [],
-    //   // 'content' => $this->record->content ?: [],
-    //   // 'recorded_by' => [
-    //   //   'name' => data_get($this->record->recorded_by, 'name'),
-    //   //   'role' => data_get($this->record->recorded_by, 'role'),
-    //   //   'designation' => data_get($this->record->recorded_by, 'designation'),
-    //   // ],
-    //   // 'approved_by' => [
-    //   //   'name' => data_get($this->record->approved_by, 'name'),
-    //   //   'role' => data_get($this->record->approved_by, 'role'),
-    //   //   'designation' => data_get($this->record->approved_by, 'designation'),
-    //   // ]
-    // ]);
+    $this->formData = [
+      'title' => $this->record->title,
+      'venue' => $this->record->venue,
+      'date' => $this->record->date,
+      'time' => $this->record->time,
+      'participants' => $this->record->participants?->map(fn ($participant) => [
+        'name' => "$participant->firstname $participant->lastname",
+        'role' => $participant->role,
+        'designation' => $participant->designation
+      ]),
+      'content' => $this->record->minute->content ?: [],
+      'recorded_by' => [
+        'name' => data_get($this->record->minute->recorded_by, 'name'),
+        'role' => data_get($this->record->minute->recorded_by, 'role'),
+        'designation' => data_get($this->record->minute->recorded_by, 'designation'),
+      ],
+      'approved_by' => [
+        'name' => data_get($this->record->minute->approved_by, 'name'),
+        'role' => data_get($this->record->minute->approved_by, 'designation'),
+      ]
+    ];
   }
 
-  protected function mutateFormDataBeforeFill(array $data): array
-  {
-    logger('', ['mutation' => $data]);
-    return $data;
-  }
 
   public function form(Schema $form): Schema
   {
     return $form
-      // ->mount(function ($record) {
-      //   logger('', ['mounted-data' => $record]);
-      // })
       ->schema([
         Wizard::make([
           Step::make('Meeting Information')
@@ -72,25 +65,21 @@ class Minutes extends Page
               Group::make()
                 ->schema([
                   TextInput::make('title')
-                    ->formatStateUsing(function ($record) {
-              logger('', ['mounted-data' => $record]);
-            })
+                    ->statePath('formData.title')
                     ->placeholder('Title')
                     ->nullable()
                     ->columnSpan(2),
                   Group::make([
                     TextInput::make('venue')
+                    ->statePath('formData.venue')
                       ->placeholder('Venue')
                       ->nullable(),
                     DatePicker::make('date')
+                    ->statePath('formData.date')
                       ->date()
-                      ->nullable()
-                      ->beforeOrEqual(now())
-                      ->validationMessages([
-                        'beforeOrEqual' => ':attribute can\'t be in the future'
-                      ])
-                      ->validationAttribute('Minute date'),
+                      ->nullable(),
                     TimePicker::make('time')
+                    ->statePath('formData.time')
                       ->time(),
                   ])
                     ->columns(3)
@@ -100,8 +89,13 @@ class Minutes extends Page
                     ->description('List of all members of this meeting')
                     ->schema([
                       Repeater::make('participants')
+                        ->statePath('formData.participants')
                         ->schema([
-                          TextInput::make('name')->placeholder('Full name'),
+                          TextInput::make('name')
+                            ->formatStateUsing(function ($state) {
+                              logger('', ['state' => $state]);
+                            })
+                            ->placeholder('Full name'),
                           TextInput::make('role')->placeholder('Secretary'),
                           TextInput::make('designation')->placeholder('Physical Planning Department')
                         ])
@@ -147,33 +141,19 @@ class Minutes extends Page
                       TextInput::make('title'),
                       RichEditor::make('contents')
                         ->label('Create Minutes')
-
                         ->columnSpanFull()
                         ->toolbarButtons([
-                          ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
                           ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
+                          ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
                           ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
                           ['table', 'attachFiles'], // The `customBlocks` and `mergeTags` tools are also added here if those features are used.
                           ['undo', 'redo'],
                         ])
-                        // ->toolbarButtons([
-                        //   'bold',
-                        //   'bulletList',
-                        //   'heading',
-                        //   'table',
-                        //   'italic',
-                        //   'link',
-                        //   'orderedList',
-                        //   'redo',
-                        //   'strike',
-                        //   'underline',
-                        //   'undo',
+                        // ->disableToolbarButtons([
+                        //   'attachFiles',
+                        //   'blockquote',
+                        //   'codeBlock',
                         // ])
-                        ->disableToolbarButtons([
-                          'attachFiles',
-                          'blockquote',
-                          'codeBlock',
-                        ])
                         ->columnSpanFull(),
                     ])
                     ->grid(2)

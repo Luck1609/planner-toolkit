@@ -9,6 +9,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class Profile extends Page
 {
@@ -20,11 +21,25 @@ class Profile extends Page
 
   protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
+  public array $basicFormValues = [];
+  public array $securityFormValues = [];
+
   public function getForms(): array
   {
     return [
       'basicForm',
       'securityForm',
+    ];
+  }
+
+  public function mount()
+  {
+    $user = Auth::user();
+    $this->basicFormValues = [
+      'firstname' => $user->firstname,
+      'lastname' => $user->lastname,
+      'email' => $user->email,
+      'phone' => $user->phone,
     ];
   }
 
@@ -37,16 +52,20 @@ class Profile extends Page
           ->icon('heroicon-o-user')
           ->schema([
             TextInput::make('firstname')
-              ->placeholder('Type in your firstname'),
+              ->placeholder('Type in your firstname')
+              ->statePath('basicFormValues.firstname'),
 
             TextInput::make('lastname')
-              ->placeholder('Type in your lastname'),
+              ->placeholder('Type in your lastname')
+              ->statePath('basicFormValues.lastname'),
 
             TextInput::make('email')
-              ->placeholder('Type in your email address'),
+              ->placeholder('Type in your email address')
+              ->statePath('basicFormValues.email'),
 
             TextInput::make('phone')
-              ->placeholder('Type in your phone number'),
+              ->placeholder('Type in your phone number')
+              ->statePath('basicFormValues.phone'),
           ])
           ->columns(2),
       ]);
@@ -62,20 +81,17 @@ class Profile extends Page
           ->schema([
             TextInput::make('old_password')
               ->label('Current password')
-              ->placeholder('************************')
-              ->columnSpan(2),
+              ->placeholder('************************'),
 
             TextInput::make('password')
               ->label('New password')
-              ->placeholder('************************')
-              ->columnSpan(2),
+              ->placeholder('************************'),
 
             TextInput::make('password_confirmation')
               ->label('Confirm password')
-              ->placeholder('************************')
-              ->columnSpan(2),
+              ->placeholder('************************'),
           ])
-          ->columns(3),
+          ->columns(2),
       ]);
   }
 

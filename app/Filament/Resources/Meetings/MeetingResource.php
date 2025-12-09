@@ -2,15 +2,11 @@
 
 namespace App\Filament\Resources\Meetings;
 
-use App\DTO\MeetingTypeDTO;
 use App\Enums\MeetingTypeEnum;
 use App\Filament\Resources\Meetings\Pages\ManageMeetings;
 use App\Filament\Resources\Meetings\Pages\Minutes;
-use App\Filament\Resources\Minutes\MinuteResource;
 use App\Models\Meeting;
-use App\Models\Minute;
 use App\Models\Participant;
-use App\Services\FormService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -20,9 +16,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -62,7 +56,7 @@ class MeetingResource extends Resource
           Action::make('minutes')
             ->icon('icon-file-description')
             ->color(Color::Blue)
-            ->url(fn (Model $record) => MeetingResource::getUrl('minutes', ['record' => $record->minute->id])),
+            ->url(fn (Model $record) => MeetingResource::getUrl('minutes', ['record' => $record])),
           EditAction::make(),
           DeleteAction::make(),
         ])
@@ -78,7 +72,7 @@ class MeetingResource extends Resource
   {
     return [
       'index' => ManageMeetings::route('/'),
-      'minutes' => Minutes::route('/{record}/minutes'),
+      'minutes' => Minutes::route('/{record}/minutes')
     ];
   }
 }

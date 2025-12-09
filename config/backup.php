@@ -7,7 +7,7 @@ return [
     * The name of this application. You can use this name to monitor
     * the backups.
     */
-    'name' => env('APP_NAME', 'plnr-toolkit-backup'),
+    'name' => 'plnr-toolkit-backup',
 
     'source' => [
       'files' => [
@@ -15,7 +15,8 @@ return [
         * The list of directories and files that will be included in the backup.
         */
         'include' => [
-          base_path(),
+          // base_path('storage'),
+          storage_path('app')
         ],
 
         /*
@@ -43,7 +44,7 @@ return [
         * Set to `null` to include complete absolute path
         * Example: base_path()
         */
-        'relative_path' => null,
+        'relative_path' => true,
       ],
 
       /*
@@ -77,7 +78,8 @@ return [
       * For a complete list of available customization options, see https://github.com/spatie/db-dumper
       */
       'databases' => [
-        env('DB_CONNECTION', 'mysql'),
+        env('DB_CONNECTION', 'sqlite'),
+        // env('DB_CONNECTION', 'mysql'),
       ],
     ],
 
